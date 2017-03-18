@@ -39,15 +39,18 @@ end
 -- a collection of 32 palettes, each palette with 16 colors
 function get_palettes(addr)
 	palettes = {}
-	for i = 1, 32 do
-		local row_offset = 0x20 * (i-1)
+    local row_offset = 0x0
+    
+	for i = 0, 31 do
 		palette = {}
+        local color_offset = 0x0
 
-		for j=1, 16 do
-			local color_offset = 0x2 * (j - 1)
+		for j = 0, 15 do
             palette[j] = mem:read_u16(addr + row_offset + color_offset)
+            color_offset =  color_offset + 0x2
 		end
-		palettes[i-1] = palette
+		palettes[i] = palette
+        row_offset = row_offset + 0x20
 	end
 	return palettes
 end
