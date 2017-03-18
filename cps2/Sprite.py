@@ -3,15 +3,15 @@ from PIL import Image
 import numpy as np
 np.set_printoptions(threshold=np.inf)
 
-from src import Tile
+from cps2 import Tile
 
+#XFLIP/YFLIP not handled yet
 #A sprite is a collection of tiles that use the same palette
 class Sprite(object):
-    # def __init__(self, base_tile, tiles, palette, loc, size, priority=0):
-    def __init__(self, base_tile, tiles, palette, loc, size, priority=0):
+    def __init__(self, base_tile, tiles, palnum, loc, size, priority=0):
         self._base_tile = base_tile
         self._tiles = tiles
-        self._palette = palette
+        self._palnum = palnum
         self._loc = loc
         self._size = size
         self._priority = priority
@@ -39,12 +39,12 @@ class Sprite(object):
         self._tiles = value
 
     @property
-    def palette(self):
-        return self._palette
+    def palnum(self):
+        return self._palnum
 
-    @palette.setter
-    def palette(self, value):
-        self._palette = value
+    @palnum.setter
+    def palnum(self, value):
+        self._palnum = value
 
     @property
     def location(self):
@@ -72,53 +72,30 @@ class Sprite(object):
     def width(self):
         return self._size[0]
 
-    def _colortile(self, subtiles, palette):
-        color_tile = []
-        for row in subtiles:
-            color_row = []
-            for val in row:
-                index = int.from_bytes(val, byteorder='big')
-                color_row.append(palette[index])
+    def toarray(self):
+        """Returns contents of Sprite as a numpy array."""
 
-            color_tile.append(color_row)
-        return color_tile
+        arrays = [tile.toarray() for tile in self._tiles]
+        array2d = list2d(arrays, self._size)
+        array_rows = [np.concatenate(row, axis=1) for row in array2d]
 
-    def toarray(self, palette):
-        """Unpacks the tiles and fills in pixel color.
+        return np.concatenate(array_rows, axis=0)
 
-        Returns an array.
-        """
-        pic_array = []
+    # seems to be pulling from wrong palette
+    def color_tiles(self, palette):
+        """Colors all the tiles"""
+        self._tiles = [Tile.fromtile(tile, palette) for tile in self._tiles]
 
-        tiles = self.tiles2d()
-        for tile_row in tiles:
-            row = []
-            for tile in tile_row:
-                interleaved_tile = tile.interleave_subtiles()
-                tile_fmt = interleaved_tile.dimensions * 'c'
-                tile_iter = struct.iter_unpack(tile_fmt, interleaved_tile.unpack())
-                subtiles = [subtile for subtile in tile_iter]
-
-                row.append(self._colortile(subtiles, palette))
-
-            pic_array.append(row)
-
-        array_rows = []
-        for row in np.array(pic_array):
-            array_rows.append(np.concatenate(row, axis=1))
-        assembled = np.concatenate(array_rows, axis=0)
-
-        return assembled
-
-    def tobmp(self, palette, path_to_save):
+    def tobmp(self, path_to_save):
         """Returns a .bmp file"""
-        concat = self.toarray(palette)
+        concat = self.toarray()
         image = Image.fromarray(concat, 'RGB')
         image.save(path_to_save + ".bmp")
 
-    def topng(self, palette, path_to_save):
+    def topng(self, path_to_save):
         """Returns a .png file"""
-        concat = self.toarray(palette)
+
+        concat = self.toarray()
         image = Image.fromarray(concat, 'RGB')
         image.save(path_to_save + ".png")
 
@@ -143,7 +120,7 @@ class Sprite(object):
 # Factories
 def fromdict(dict_):
     """Returns a Sprite object with empty tiles property."""
-    palette = dict_['pal_number']
+    palnum = dict_['pal_number']
 
     tile_number = dict_['tile_number']
     size = (dict_['width'], dict_['height'])
@@ -158,13 +135,11 @@ def fromdict(dict_):
             addr = hex(int(tile_number, 16) + offset)
             tiles.append(Tile.Tile(addr, None))
 
-    return Sprite(tile_number, tiles, palette, loc, size, priority=dict_['priority'])
+    return Sprite(tile_number, tiles, palnum, loc, size, priority=dict_['priority'])
 
-def _argb_to_rgb(color):
-    """Converts the 2 byte ARGB format the cps2 uses.
-
-    Returns a bytes() of 3 byte RGB.
-    """
-    if len(color) < 4:
-        color = (4 - len(color)) * '0' + color
-    return bytes.fromhex(color[1] * 2 + color[2] * 2 + color[3] * 2)
+def list2d(list_, size):
+    list_2d = []
+    for i in range(size[1]):
+        offset = size[0] * i
+        list_2d.append(list_[offset:offset + size[0]])
+    return list_2d

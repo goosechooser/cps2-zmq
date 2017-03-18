@@ -2,9 +2,9 @@ import jsonpickle
 from PIL import Image
 
 class Frame(object):
-    def __init__(self, fnumber, sprites, palette):
+    def __init__(self, fnumber, sprites, palettes):
         self._fnumber = fnumber
-        self._palette = palette
+        self._palettes = palettes
         self._sprites = sprites
 
     def __repr__(self):
@@ -18,15 +18,20 @@ class Frame(object):
     def sprites(self):
         return self._sprites
 
+    @property
+    def palettes(self):
+        return self._palettes
+
     def add_sprites(self, sprites):
         self._sprites.extend(sprites)
 
     def topng(self, fname, imsize=(400, 400)):
         canvas = Image.new('RGB', imsize)
         for sprite in self._sprites:
-            palette = self._palette[sprite.palette]
+            palette = self._palettes[sprite.palnum]
+            # sprite.color_tiles(palette)
             canvas.paste(
-                Image.fromarray(sprite.toarray(palette), 'RGB'),
+                Image.fromarray(sprite.toarray(), 'RGB'),
                 sprite.location
                 )
         canvas.save('.'.join([fname, 'png']))
@@ -41,9 +46,8 @@ class Frame(object):
 def new(fnumber, sprites, palettes):
     converted = {}
     for k, v in palettes.items():
-        conv = [_argb_to_rgb(hex(color)[1:]) for color in v]
+        conv = {kk : _argb_to_rgb(hex(color)[2:]) for kk, color in v.items()}
         converted[k] = conv
-
     return Frame(fnumber, sprites, converted)
 
 
@@ -54,7 +58,7 @@ def _argb_to_rgb(color):
     """
     if len(color) < 4:
         color = (4 - len(color)) * '0' + color
-    return bytes.fromhex(color[1] * 2 + color[2] * 2 + color[3] * 2)
+    return (int(color[1] * 2, 16), int(color[2] * 2, 16), int(color[3] * 2, 16))
 
 
 def fromfile(path):
