@@ -24,6 +24,7 @@ def sprite_mask(byte_data):
     dict_['xflip'] = (byte_data[3] & 0x0020) >> 5
     dict_['pal_number'] = "{0:x}".format(byte_data[3] & 0x001F)
     # dict_['mem_addr'] = "{0:x}".format(byte_data[4])
+    
     return dict_
 
 def mask_all(sprites):
@@ -56,29 +57,6 @@ class Worker(Thread):
         # print('thread setup')
         #add sub socket for kill signal
 
-    def _cleanup(self):
-        self._pusher.close()
-        self._control.close()
-
-    def _work(self, message):
-        result = message['frame_number']
-        if message['frame_number'] != 'closing':
-            if message['frame_number'] > 1140:
-                masked = mask_all(message['sprites'])
-                palettes = message['palettes']
-
-                sprites = [Sprite.fromdict(m) for m in masked]
-
-                frame = Frame.new(message['frame_number'], sprites, palettes)
-                frame.tofile("frame_data\\")
-                # frame.topng('_'.join(["frame_img\\frame", str(frame.fnumber)]))
-            else:
-                result = {}
-        else:
-            pass
-
-        return result
-
     def run(self):
         while self._state == 'working':
             polled = dict(self._poller.poll())
@@ -108,6 +86,29 @@ class Worker(Thread):
                 self._pusher.send_pyobj(result)
 
         self._cleanup()
+
+    def _work(self, message):
+        result = message['frame_number']
+        if message['frame_number'] != 'closing':
+            if message['frame_number'] > 1140:
+                masked = mask_all(message['sprites'])
+                palettes = message['palettes']
+
+                sprites = [Sprite.fromdict(m) for m in masked]
+
+                frame = Frame.new(message['frame_number'], sprites, palettes)
+                frame.tofile("frame_data\\")
+                # frame.topng('_'.join(["frame_img\\frame", str(frame.fnumber)]))
+            else:
+                result = {}
+        else:
+            pass
+
+        return result
+
+    def _cleanup(self):
+        self._pusher.close()
+        self._control.close()
 
 class WorkSink(Thread):
     def __init__(self, nworkers, context=None):
