@@ -100,7 +100,7 @@ class Sprite(object):
         """Returns a .bmp file"""
         try:
             image = Image.fromarray(self.toarray(), 'RGB')
-        except ValueError as err:
+        except ValueError:
             image = Image.fromarray(self.toarray(), 'P')
         image.save(path_to_save + ".bmp")
 
@@ -108,7 +108,7 @@ class Sprite(object):
         """Returns a .png file"""
         try:
             image = Image.fromarray(self.toarray(), 'RGB')
-        except ValueError as err:
+        except ValueError:
             image = Image.fromarray(self.toarray(), 'P')
         image.save(path_to_save + ".png")
 

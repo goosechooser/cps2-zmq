@@ -43,7 +43,6 @@ def convert_mame_addr(mame_addr, tile_size, split=True):
 
     Returns an int.
     """
-    tile_bytes = 0
     addr = int(mame_addr, 16)
     if tile_size == 8:
         tile_bytes = 32
