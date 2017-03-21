@@ -3,6 +3,7 @@ frame*/
 .vscode/
 scratch.py
 notes
+data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
