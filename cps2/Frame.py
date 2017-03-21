@@ -25,11 +25,13 @@ class Frame(object):
     def add_sprites(self, sprites):
         self._sprites.extend(sprites)
 
+    # Only needs to create a png, doesn't need to color in sprites
+    # Issues arise from assuming all the sprites are already colored
+    # Uncolored tiles are output by using 'P'(palette) mode
+    # Since 
     def topng(self, fname, imsize=(400, 400)):
         canvas = Image.new('RGB', imsize)
         for sprite in self._sprites:
-            palette = self._palettes[sprite.palnum]
-            # sprite.color_tiles(palette)
             canvas.paste(
                 Image.fromarray(sprite.toarray(), 'RGB'),
                 sprite.location
@@ -48,8 +50,8 @@ def new(fnumber, sprites, palettes):
     for k, v in palettes.items():
         conv = {kk : _argb_to_rgb(hex(color)[2:]) for kk, color in v.items()}
         converted[k] = conv
-    return Frame(fnumber, sprites, converted)
 
+    return Frame(fnumber, sprites, converted)
 
 def _argb_to_rgb(color):
     """Converts the 2 byte ARGB format the cps2 uses.
@@ -58,11 +60,17 @@ def _argb_to_rgb(color):
     """
     if len(color) < 4:
         color = (4 - len(color)) * '0' + color
+
     return (int(color[1] * 2, 16), int(color[2] * 2, 16), int(color[3] * 2, 16))
 
 
 def fromfile(path):
+    """Returns a Frame from a json encoded file."""
     with open(path, 'r') as f:
         frame = jsonpickle.decode(f.read())
 
     return frame
+
+# One day
+def from_image(image, frame):
+    pass
