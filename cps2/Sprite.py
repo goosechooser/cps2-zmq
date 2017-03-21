@@ -1,19 +1,18 @@
-import struct
 from PIL import Image
 import numpy as np
 np.set_printoptions(threshold=np.inf)
 
-from cps2 import Tile
+from cps2 import Tile, ColorTile
 
-#XFLIP/YFLIP not handled yet
 #A sprite is a collection of tiles that use the same palette
 class Sprite(object):
-    def __init__(self, base_tile, tiles, palnum, loc, size, priority=0):
+    def __init__(self, base_tile, tiles, palnum, loc, size, flips, priority=0):
         self._base_tile = base_tile
         self._tiles = tiles
         self._palnum = palnum
         self._loc = loc
         self._size = size
+        self._flips = flips
         self._priority = priority
 
     def __repr__(self):
@@ -59,6 +58,10 @@ class Sprite(object):
         return self._size
 
     @property
+    def flips(self):
+        return self._flips
+
+    @property
     def priority(self):
         return self._priority
 
@@ -78,44 +81,57 @@ class Sprite(object):
         arrays = [tile.toarray() for tile in self._tiles]
         array2d = list2d(arrays, self._size)
         array_rows = [np.concatenate(row, axis=1) for row in array2d]
+        preflip = np.concatenate(array_rows, axis=0)
 
-        return np.concatenate(array_rows, axis=0)
+        if self._flips[0]:
+            preflip = np.fliplr(preflip)
+        if self._flips[1]:
+            preflip = np.flipud(preflip)
+
+        return preflip
 
     # seems to be pulling from wrong palette
     def color_tiles(self, palette):
         """Colors all the tiles"""
-        self._tiles = [Tile.fromtile(tile, palette) for tile in self._tiles]
+
+        self._tiles = [ColorTile.fromtile(tile, palette) for tile in self._tiles]
 
     def tobmp(self, path_to_save):
         """Returns a .bmp file"""
-        concat = self.toarray()
-        image = Image.fromarray(concat, 'RGB')
+        try:
+            image = Image.fromarray(self.toarray(), 'RGB')
+        except ValueError as err:
+            image = Image.fromarray(self.toarray(), 'P')
         image.save(path_to_save + ".bmp")
 
     def topng(self, path_to_save):
         """Returns a .png file"""
-
-        concat = self.toarray()
-        image = Image.fromarray(concat, 'RGB')
+        try:
+            image = Image.fromarray(self.toarray(), 'RGB')
+        except ValueError as err:
+            image = Image.fromarray(self.toarray(), 'P')
         image.save(path_to_save + ".png")
 
-    def tiles2d(self):
-        """Returns a list of lists containing the Sprite's tiles."""
-        list_2d = []
-        for i in range(self._size[1]):
-            offset = self._size[0] * i
-            list_2d.append(self._tiles[offset:offset + self._size[0]])
+    # May not need
+    # def tiles2d(self):
+    #     """Returns a list of lists containing the Sprite's tiles."""
+    #     return list2d(self._tiles, self._size)
+        # list_2d = []
+        # for i in range(self._size[1]):
+        #     offset = self._size[0] * i
+        #     list_2d.append(self._tiles[offset:offset + self._size[0]])
 
-        return list_2d
+        # return list_2d
 
-    def addrs2d(self):
-        """Returns a list of lists containing the tiles' addresses."""
-        list_2d = []
-        for i in range(self._size[1]):
-            offset = self._size[0] * i
-            list_2d.append([tile.address for tile in self._tiles[offset:offset + self._size[0]]])
+    # May not need
+    # def addrs2d(self):
+    #     """Returns a list of lists containing the tiles' addresses."""
+    #     list_2d = []
+    #     for i in range(self._size[1]):
+    #         offset = self._size[0] * i
+    #         list_2d.append([tile.address for tile in self._tiles[offset:offset + self._size[0]]])
 
-        return list_2d
+    #     return list_2d
 
 # Factories
 def fromdict(dict_):
@@ -125,6 +141,7 @@ def fromdict(dict_):
     tile_number = dict_['tile_number']
     size = (dict_['width'], dict_['height'])
     loc = (dict_['x'], dict_['y'])
+    flips = (dict_['xflip'], dict_['yflip'])
     if dict_['offset'] is 0:
         loc = (loc[0] - 64, loc[1] - 16)
 
@@ -135,7 +152,7 @@ def fromdict(dict_):
             addr = hex(int(tile_number, 16) + offset)
             tiles.append(Tile.Tile(addr, None))
 
-    return Sprite(tile_number, tiles, palnum, loc, size, priority=dict_['priority'])
+    return Sprite(tile_number, tiles, palnum, loc, size, flips, priority=dict_['priority'])
 
 def list2d(list_, size):
     list_2d = []
@@ -143,3 +160,32 @@ def list2d(list_, size):
         offset = size[0] * i
         list_2d.append(list_[offset:offset + size[0]])
     return list_2d
+
+# Can probably calculate tile size param from image size
+def from_image(image, sprite):
+    """Given an image, returns a Sprite."""
+    im = Image.open(image)
+
+    if sprite.flips[0]:
+        im = im.transpose(Image.FLIP_LEFT_RIGHT)
+    if sprite.flips[1]:
+        im = im.transpose(Image.FLIP_TOP_BOTTOM)
+
+    cropped_imgs = []
+    addresses = []
+    for i in range(sprite.size[1]):
+        for j in range(sprite.size[0]):
+            change = (16 * j, 16 * i, 16 + 16 * j, 16 + 16 * i)
+            cropped_imgs.append(im.crop(change))
+            changed_addr = int(sprite.base_tile, 16) + 0x10 * i + 0x1 * j
+            addresses.append(hex(changed_addr))
+
+    zipped = zip(cropped_imgs, addresses)
+
+    if im.mode == 'P':
+        tiles = [Tile.new(addr, bytes(img.getdata())) for img, addr in zipped]
+
+    if im.mode == 'RGB':
+        tiles = [ColorTile.new(addr, list(img.getdata()), None) for img, addr in zipped]
+
+    return Sprite(sprite.base_tile, tiles, sprite.palnum, sprite.location, sprite.size, sprite.flips)
