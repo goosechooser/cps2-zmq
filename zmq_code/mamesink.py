@@ -24,7 +24,7 @@ def sprite_mask(byte_data):
     dict_['xflip'] = (byte_data[3] & 0x0020) >> 5
     dict_['pal_number'] = "{0:x}".format(byte_data[3] & 0x001F)
     # dict_['mem_addr'] = "{0:x}".format(byte_data[4])
-    
+
     return dict_
 
 def mask_all(sprites):

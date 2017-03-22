@@ -206,8 +206,6 @@ class Tile(object):
         interleaved = [*top, *bottom]
         return b''.join(interleaved)
 
-    
-
     @staticmethod
     def _deinterleave_subtiles(data):
         tile_fmt = Struct(64 * 'c')
@@ -219,7 +217,7 @@ class Tile(object):
 
         deinterleaved = [subtiles[0], subtiles[2], subtiles[1], subtiles[3]]
         return b''.join(deinterleaved)
-    
+
     @staticmethod
     def _deinterleave(data):
         deinterleaved = [[], []]

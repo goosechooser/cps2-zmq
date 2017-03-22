@@ -28,7 +28,6 @@ class Frame(object):
     # Only needs to create a png, doesn't need to color in sprites
     # Issues arise from assuming all the sprites are already colored
     # Uncolored tiles are output by using 'P'(palette) mode
-    # Since 
     def topng(self, fname, imsize=(400, 400)):
         canvas = Image.new('RGB', imsize)
         for sprite in self._sprites:
