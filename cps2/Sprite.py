@@ -112,26 +112,12 @@ class Sprite(object):
             image = Image.fromarray(self.toarray(), 'P')
         image.save(path_to_save + ".png")
 
-    # May not need
-    # def tiles2d(self):
-    #     """Returns a list of lists containing the Sprite's tiles."""
-    #     return list2d(self._tiles, self._size)
-        # list_2d = []
-        # for i in range(self._size[1]):
-        #     offset = self._size[0] * i
-        #     list_2d.append(self._tiles[offset:offset + self._size[0]])
-
-        # return list_2d
-
-    # May not need
-    # def addrs2d(self):
-    #     """Returns a list of lists containing the tiles' addresses."""
-    #     list_2d = []
-    #     for i in range(self._size[1]):
-    #         offset = self._size[0] * i
-    #         list_2d.append([tile.address for tile in self._tiles[offset:offset + self._size[0]]])
-
-    #     return list_2d
+def list2d(list_, size):
+    list_2d = []
+    for i in range(size[1]):
+        offset = size[0] * i
+        list_2d.append(list_[offset:offset + size[0]])
+    return list_2d
 
 # Factories
 def fromdict(dict_):
@@ -153,13 +139,6 @@ def fromdict(dict_):
             tiles.append(Tile.Tile(addr, None))
 
     return Sprite(tile_number, tiles, palnum, loc, size, flips, priority=dict_['priority'])
-
-def list2d(list_, size):
-    list_2d = []
-    for i in range(size[1]):
-        offset = size[0] * i
-        list_2d.append(list_[offset:offset + size[0]])
-    return list_2d
 
 # Can probably calculate tile size param from image size
 def from_image(image, sprite):
@@ -188,4 +167,9 @@ def from_image(image, sprite):
     if im.mode == 'RGB':
         tiles = [ColorTile.new(addr, list(img.getdata()), None) for img, addr in zipped]
 
-    return Sprite(sprite.base_tile, tiles, sprite.palnum, sprite.location, sprite.size, sprite.flips)
+    new_sprite = sprite
+    new_sprite.tiles = tiles
+    return new_sprite
+
+def to_file():
+    pass
