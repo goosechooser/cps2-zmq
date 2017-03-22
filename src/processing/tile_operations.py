@@ -1,4 +1,4 @@
-from cps2 import Tile
+from src.processing import Tile
 
 # tile_operations.py handles I/O tasks
 # ie: reading tile data or writing tile data out

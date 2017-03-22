@@ -1,7 +1,7 @@
 from struct import iter_unpack
 import numpy as np
 from PIL import Image
-from cps2.Tile import Tile
+from src.processing.Tile import Tile
 
 # Tile with 100% more color
 # Unpacked and deinterleaved

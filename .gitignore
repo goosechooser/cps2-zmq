@@ -4,6 +4,7 @@ frame*/
 scratch.py
 notes
 data/
+docs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

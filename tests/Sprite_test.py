@@ -1,5 +1,5 @@
 import pytest
-from cps2 import tile_operations, Sprite
+from src.processing import tile_operations, Sprite
 
 # Make this a real test
 # should supply a test input + palette and check output

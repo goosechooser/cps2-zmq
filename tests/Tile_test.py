@@ -1,6 +1,6 @@
 from struct import Struct
 import pytest
-from cps2 import Tile
+from src.processing import Tile
 
 TEST_ADDR = ''
 TEST_DATA = 'F1F2F3F4F1F2F3F4F1F2F3F4F1F2F3F4F1F2F3F4F1F2F3F4F1F2F3F4F1F2F3F4'
@@ -49,7 +49,3 @@ def test_from_image(tmpdir_factory):
     test_tile = Tile.from_image(str(fn2), tile.address)
 
     assert tile.data == test_tile.data
-
-if __name__ == "__main__":
-    print("sup")
-    

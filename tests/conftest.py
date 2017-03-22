@@ -10,10 +10,6 @@ def get_frame(framefile):
         data = f.read()
     return jsonpickle.decode(data)
 
-FRAME = get_frame('frame_data\\1141.json')
-GFXFILE = get_file('data\\vm3_combined')
-GFXMAP = mmap.mmap(GFXFILE.fileno(), 0)
-
 @pytest.fixture(scope='module')
 def testframe():
     return get_frame('frame_data\\1141.json')
@@ -24,7 +20,7 @@ def gfxfile():
 
 @pytest.fixture(scope='module')
 def gfxmap():
-    gfxfile = get_file('data\\vm3_combined')
-    return mmap.mmap(gfxfile.fileno(), 0)
+    gfx = get_file('data\\vm3_combined')
+    return mmap.mmap(gfx.fileno(), 0)
 
 

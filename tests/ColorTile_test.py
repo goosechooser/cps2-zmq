@@ -1,7 +1,7 @@
-import mmap
 import pytest
-from cps2 import tile_operations, ColorTile
+from src.processing import tile_operations, ColorTile
 
+# from src import processing
 # @pytest.fixture(scope='session')
 # @pytest.mark.skip
 def test_from_image_colortile(tmpdir_factory, testframe, gfxfile):
