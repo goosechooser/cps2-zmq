@@ -18,11 +18,10 @@ class ColorTile(Tile):
     # Does this need to be a protected member?
     def _color(self):
         tile_iter = iter_unpack('c', self._data)
-        #refactor this line P L E A S E
-        colors = [self._palette[str(int(i[0].hex(), 16))] for i in tile_iter]
+        colors = [self._palette[str(int.from_bytes(i[0], byteorder='big'))] for i in tile_iter]
         self._data = colors
 
-    # need to turn array of 3 byte RGB values into 3 array of R, G, B
+    # need to turn list of tuples represting RGB into 3 arrays (R, G, B)
     # then stack them
     def toarray(self):
         """Uses 8x8 or 16x16 Tile data to create an array of the tile's data.
@@ -44,7 +43,7 @@ class ColorTile(Tile):
         """Creates a .bmp image from a single 8x8 or 16x16 tile."""
         try:
             image = Image.fromarray(self.toarray(), 'RGB')
-        except ValueError as err:
+        except ValueError:
             image = Image.fromarray(self.toarray(), 'P')
         image.save(path_to_save + ".bmp")
 
@@ -52,15 +51,17 @@ class ColorTile(Tile):
         """Creates a .png image from a single 8x8 or 16x16 tile."""
         try:
             image = Image.fromarray(self.toarray(), 'RGB')
-        except ValueError as err:
+        except ValueError:
             image = Image.fromarray(self.toarray(), 'P')
         image.save(path_to_save + ".png")
 
     def totile(self):
-        """Strips palette.
+        """Strips palette. Returns new unpacked Tile"""
+        reversed_ = {v : k for k, v in self._palette.items()}
+        stripped = [int(reversed_[d]) for d in self._data]
 
-        Returns interleaved, packed Tile"""
-        pass
+        return Tile(self._addr, bytes(stripped))
+
 def new(address, data, palette, dimensions=16):
     return ColorTile(address, data, palette, dimensions)
 
