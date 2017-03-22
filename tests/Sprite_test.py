@@ -17,7 +17,7 @@ GFXMAP = mmap.mmap(GFXFILE.fileno(), 0)
 
 # Make this a real test
 # should supply a test input + palette and check output
-@pytest.mark.skip
+# @pytest.mark.skip
 def test_colortile():
     sprite = FRAME.sprites[0]
     palette = FRAME.palettes[sprite.palnum]
@@ -26,7 +26,7 @@ def test_colortile():
 
 # WORKS
 # Not a real test though
-@pytest.mark.skip
+# @pytest.mark.skip
 def test_topng():
     for i, sprite in enumerate(FRAME.sprites):
         palette = FRAME.palettes[sprite.palnum]
@@ -38,6 +38,7 @@ def test_topng():
 
 # Currently only tests ColorTile
 # @pytest.fixture(scope='session')
+# @pytest.mark.skip
 def test_from_image_colortile(tmpdir_factory):
     sprite = FRAME.sprites[0]
     palette = FRAME.palettes[sprite.palnum]
@@ -55,7 +56,19 @@ def test_from_image_colortile(tmpdir_factory):
 
     assert tile.data == test_tile.data
 
+def test_totile():
+    for sprite in FRAME.sprites:
+        palette = FRAME.palettes[sprite.palnum]
+        sprite.tiles = tile_printer.fill_tiles(GFXFILE, sprite.tiles)
+        basetiles = sprite.tiles
+
+        sprite.color_tiles(palette)
+        for i, tile in enumerate(sprite.tiles):
+            stripped = tile.totile()
+            assert basetiles[i] == stripped
+
 # @pytest.fixture(scope='session')
+# @pytest.mark.skip
 def test_from_image(tmpdir_factory):
     for sprite in FRAME.sprites:
         palette = FRAME.palettes[sprite.palnum]
