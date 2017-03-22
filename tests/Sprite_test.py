@@ -1,7 +1,7 @@
 import mmap
 import pytest
 import jsonpickle
-from cps2 import tile_printer, ColorTile, Sprite
+from cps2 import tile_operations, ColorTile, Sprite
 
 def get_file(fpath):
     return open(fpath, 'r+b')
@@ -21,7 +21,7 @@ GFXMAP = mmap.mmap(GFXFILE.fileno(), 0)
 def test_colortile():
     sprite = FRAME.sprites[0]
     palette = FRAME.palettes[sprite.palnum]
-    sprite.tiles = tile_printer.fill_tiles(GFXFILE, sprite.tiles)
+    sprite.tiles = tile_operations.read_tiles_from_file(GFXFILE, sprite.tiles)
     sprite.color_tiles(palette)
 
 # WORKS
@@ -30,7 +30,7 @@ def test_colortile():
 def test_topng():
     for i, sprite in enumerate(FRAME.sprites):
         palette = FRAME.palettes[sprite.palnum]
-        FRAME.sprites[i].tiles = tile_printer.fill_tiles(GFXMAP, sprite.tiles)
+        FRAME.sprites[i].tiles = tile_operations.read_tiles_from_file(GFXMAP, sprite.tiles)
         sprite.color_tiles(palette)
         sprite.topng('\\'.join(['frame_img', str(sprite.base_tile)]))
     # FRAME.topng('\\'.join(['frame_img', str(FRAME.fnumber)]))
@@ -42,7 +42,7 @@ def test_topng():
 def test_from_image_colortile(tmpdir_factory):
     sprite = FRAME.sprites[0]
     palette = FRAME.palettes[sprite.palnum]
-    sprite.tiles = tile_printer.fill_tiles(GFXFILE, sprite.tiles)
+    sprite.tiles = tile_operations.read_tiles_from_file(GFXFILE, sprite.tiles)
     sprite.color_tiles(palette)
 
     tile = sprite.tiles[0]
@@ -59,7 +59,7 @@ def test_from_image_colortile(tmpdir_factory):
 def test_totile():
     for sprite in FRAME.sprites:
         palette = FRAME.palettes[sprite.palnum]
-        sprite.tiles = tile_printer.fill_tiles(GFXFILE, sprite.tiles)
+        sprite.tiles = tile_operations.read_tiles_from_file(GFXFILE, sprite.tiles)
         basetiles = sprite.tiles
 
         sprite.color_tiles(palette)
@@ -72,7 +72,7 @@ def test_totile():
 def test_from_image(tmpdir_factory):
     for sprite in FRAME.sprites:
         palette = FRAME.palettes[sprite.palnum]
-        sprite.tiles = tile_printer.fill_tiles(GFXFILE, sprite.tiles)
+        sprite.tiles = tile_operations.read_tiles_from_file(GFXFILE, sprite.tiles)
         sprite.color_tiles(palette)
         base = tmpdir_factory.mktemp('data')
         fn = base.join('spritetestpng')
