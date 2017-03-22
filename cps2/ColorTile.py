@@ -21,8 +21,6 @@ class ColorTile(Tile):
         colors = [self._palette[str(int.from_bytes(i[0], byteorder='big'))] for i in tile_iter]
         self._data = colors
 
-    # need to turn list of tuples represting RGB into 3 arrays (R, G, B)
-    # then stack them
     def toarray(self):
         """Uses 8x8 or 16x16 Tile data to create an array of the tile's data.
 
@@ -65,7 +63,7 @@ class ColorTile(Tile):
 def new(address, data, palette, dimensions=16):
     return ColorTile(address, data, palette, dimensions)
 
-def fromtile(tile, palette):
+def from_tile(tile, palette):
     return ColorTile(tile.address, tile.data, palette, tile.dimensions)
 
 # For now just do image -> ColorTile leaving palette info intact.

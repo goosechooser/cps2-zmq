@@ -90,14 +90,13 @@ class Sprite(object):
 
         return preflip
 
-    # seems to be pulling from wrong palette
     def color_tiles(self, palette):
         """Colors all the tiles"""
 
-        self._tiles = [ColorTile.fromtile(tile, palette) for tile in self._tiles]
+        self._tiles = [ColorTile.from_tile(tile, palette) for tile in self._tiles]
 
     def tobmp(self, path_to_save):
-        """Returns a .bmp file"""
+        """Creates a .bmp file"""
         try:
             image = Image.fromarray(self.toarray(), 'RGB')
         except ValueError:
@@ -105,12 +104,16 @@ class Sprite(object):
         image.save(path_to_save + ".bmp")
 
     def topng(self, path_to_save):
-        """Returns a .png file"""
+        """Creates a .png file"""
         try:
             image = Image.fromarray(self.toarray(), 'RGB')
         except ValueError:
             image = Image.fromarray(self.toarray(), 'P')
         image.save(path_to_save + ".png")
+
+    def totile(self):
+        """Returns list of Tiles."""
+        return [t.totile() if isinstance(t, ColorTile.ColorTile) else t for t in self.tiles]
 
 def list2d(list_, size):
     list_2d = []
@@ -140,9 +143,8 @@ def fromdict(dict_):
 
     return Sprite(tile_number, tiles, palnum, loc, size, flips, priority=dict_['priority'])
 
-# Can probably calculate tile size param from image size
 def from_image(image, sprite):
-    """Given an image, returns a Sprite."""
+    """Given an image and a Sprite, returns a Sprite."""
     im = Image.open(image)
 
     if sprite.flips[0]:
