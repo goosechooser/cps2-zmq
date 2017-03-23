@@ -1,5 +1,5 @@
 import pytest
-from src.processing import tile_operations, ColorTile
+from cps2_zmq.process import tile_operations, ColorTile
 
 # from src import processing
 # @pytest.fixture(scope='session')

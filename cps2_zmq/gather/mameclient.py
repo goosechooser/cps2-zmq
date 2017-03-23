@@ -1,7 +1,7 @@
 # pylint: disable=E1101
 
 import zmq
-from src.gathering.mamesink import WorkSink
+from cps2_zmq.gather.mamesink import WorkSink
 
 
 class MameClient():

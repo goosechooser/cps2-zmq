@@ -4,6 +4,7 @@ frame*/
 scratch.py
 notes
 data/
+cps_zmq/gather/scratch.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

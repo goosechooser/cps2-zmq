@@ -2,7 +2,7 @@ from PIL import Image
 import numpy as np
 np.set_printoptions(threshold=np.inf)
 
-from src.processing import Tile, ColorTile
+from cps2_zmq.process import Tile, ColorTile
 
 #A sprite is a collection of tiles that use the same palette
 class Sprite(object):

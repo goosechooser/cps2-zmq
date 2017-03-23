@@ -1,7 +1,7 @@
-src
+cps2_zmq
 ===
 
 .. toctree::
    :maxdepth: 4
 
-   src
+   cps2_zmq

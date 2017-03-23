@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# CPS2-Sphinx documentation build configuration file, created by
+# CPS2-ZMQ documentation build configuration file, created by
 # sphinx-quickstart on Wed Mar 22 03:36:08 2017.
 #
 # This file is execfile()d with the current directory set to its
@@ -57,7 +57,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'CPS2-Sphinx'
+project = 'CPS2-ZMQ'
 copyright = '2017, M B'
 author = 'M B'
 
@@ -142,7 +142,7 @@ html_theme = 'alabaster'
 # The name for this set of Sphinx documents.
 # "<project> v<release> documentation" by default.
 #
-# html_title = 'CPS2-Sphinx v3.0'
+# html_title = 'CPS2-ZMQ v3.0'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #
@@ -242,7 +242,7 @@ html_static_path = ['_static']
 # html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'CPS2-Sphinxdoc'
+htmlhelp_basename = 'CPS2-ZMQ'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -268,7 +268,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'CPS2-Sphinx.tex', 'CPS2-Sphinx Documentation',
+    (master_doc, 'CPS2-ZMQ.tex', 'CPS2-ZMQ Documentation',
      'M B', 'manual'),
 ]
 
@@ -310,7 +310,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'cps2-sphinx', 'CPS2-Sphinx Documentation',
+    (master_doc, 'cps2-zmq', 'CPS2-ZMQ Documentation',
      [author], 1)
 ]
 
@@ -325,8 +325,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'CPS2-Sphinx', 'CPS2-Sphinx Documentation',
-     author, 'CPS2-Sphinx', 'One line description of project.',
+    (master_doc, 'CPS2-ZMQ', 'CPS2-ZMQ Documentation',
+     author, 'CPS2-ZMQ', 'One line description of project.',
      'Miscellaneous'),
 ]
 

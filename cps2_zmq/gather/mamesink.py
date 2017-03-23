@@ -3,7 +3,7 @@
 import random
 from threading import Thread
 import zmq
-from src.processing import Sprite, Frame
+from cps2_zmq.process import Sprite, Frame
 
 def sprite_mask(byte_data):
     dict_ = {}

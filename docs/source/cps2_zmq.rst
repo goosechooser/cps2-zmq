@@ -1,4 +1,4 @@
-src package
+cps2_zmq package
 ===========
 
 Subpackages
@@ -6,13 +6,13 @@ Subpackages
 
 .. toctree::
 
-    src.gathering
-    src.processing
+    cps2_zmq.gather
+    cps2_zmq.process
 
 Module contents
 ---------------
 
-.. automodule:: src
+.. automodule:: cps2_zmq
     :members:
     :undoc-members:
     :show-inheritance:
