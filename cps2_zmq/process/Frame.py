@@ -3,7 +3,8 @@ from PIL import Image
 
 class Frame(object):
     """
-    Frame is a container of Sprites.
+    Frame is a container of Sprites. It is related to the frames drawn by the CPS2 hardware.
+    Ideally this would provide methods for manipulating sprites en masse.
     """
     def __init__(self, fnumber, sprites, palettes):
         """
@@ -11,9 +12,9 @@ class Frame(object):
         In most cases you want to use the factory methods
 
         Args:
-            fnumber (int): the frame number
-            palettes (dict): the 32 x 16 colors of Frame
-            sprites ([Sprite]): the Sprites of Frame
+            fnumber (int): the frame number. Frames should have a unique fnumber (linearly increasing).
+            palettes (dict): contains the 32 palettes used by Sprites/ColorTiles in the Frame
+            sprites (:obj:`list` of :obj:`Sprite.Sprite`): the Sprites of the Frame
         """
         self._fnumber = fnumber
         self._palettes = palettes
@@ -25,21 +26,21 @@ class Frame(object):
     @property
     def fnumber(self):
         """
-        Get fnumber
+        Get the fnumber.
         """
         return self._fnumber
 
     @property
     def sprites(self):
         """
-        Get sprites
+        Get the sprites.
         """
         return self._sprites
 
     @property
     def palettes(self):
         """
-        Get palettes
+        Get the palettes.
         """
         return self._palettes
 
@@ -48,7 +49,7 @@ class Frame(object):
         Add sprites to the Frame's existing sprites.
 
         Args:
-            sprites ([Sprite]): a list of sprites
+            sprites (:obj:`list` of :obj:`Sprite.Sprite`): a list of sprites
         """
         self._sprites.extend(sprites)
 
@@ -61,7 +62,7 @@ class Frame(object):
 
         Args:
             fname (str): the name to save the PNG file as.
-            imsize ((int, int)): The size of the PNG file. A tuple.
+            imsize (int, int, optional): The size of the PNG file. Defaults to (400, 400)
         """
         canvas = Image.new('RGB', imsize)
         for sprite in self._sprites:
@@ -91,7 +92,7 @@ def new(fnumber, sprites, palettes):
 
     Args:
         fnumber (int): the frame number
-        sprites ([Sprite]): a list of Sprites
+        sprites (:obj:`list` of :obj:`Sprite.Sprite`): a list of Sprites
         palettes (dict): a dict of 32 keys. Each key is paired with another dict of length 16.
 
     Returns:
@@ -124,10 +125,10 @@ def _argb_to_rgb(color):
     Converts the 2 byte ARGB format the cps2 uses to a tuple of RGB values.
 
     Args:
-        color (bytes): a 2 byte value in ARGB format
+        color (bytes): a 2 byte value in ARGB format.
 
     Returns:
-        a tuple of 3 ints (R, G, B)
+        an (int, int, int) representing the RGB value of a pixel.
     """
     if len(color) < 4:
         color = (4 - len(color)) * '0' + color

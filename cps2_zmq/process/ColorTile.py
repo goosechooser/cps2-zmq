@@ -6,7 +6,19 @@ from cps2_zmq.process.Tile import Tile
 # Tile with 100% more color
 # Unpacked and deinterleaved
 class ColorTile(Tile):
+    """
+    ColorTile is Tile with a color palette.
+
+    Attributes:
+            addr (int): the address in memory the tile resides at.
+            data (:obj:`bytes`): 32 bytes for a 8x8 tile or 128 bytes for a 16x16 tile.
+            dimensions (int): 8 for an 8x8 tile, 16 for a 16x16 tile.
+            palette (dict): 16 key-value pairs related to what the RGB value of a pixel is.
+    """
     def __init__(self, addr, data, palette, dimensions=16):
+        """
+        Constructs a new :obj:`ColorTile` object.
+        """
         super(ColorTile, self).__init__(addr, data, dimensions)
         self._palette = palette
         if palette is not None:
@@ -15,16 +27,18 @@ class ColorTile(Tile):
     def __repr__(self):
         return ' '.join(["ColorTile:", str(self._addr), 'size:', str(self._dims)])
 
-    # Does this need to be a protected member?
+    # todo: exception handling for palettes that don't have the correct key(s)
     def _color(self):
         tile_iter = iter_unpack('c', self._data)
         colors = [self._palette[str(int.from_bytes(i[0], byteorder='big'))] for i in tile_iter]
         self._data = colors
 
     def toarray(self):
-        """Uses 8x8 or 16x16 Tile data to create an array of the tile's data.
+        """
+        Converts the :obj:`ColorTile` data into a correctly shaped numpy array.
 
-        Returns an array.
+        Returns:
+            a numpy.array.
         """
         colors = [[], [], []]
 
@@ -37,38 +51,78 @@ class ColorTile(Tile):
         colorarr = np.dstack(arrays)
         return colorarr
 
-    def tobmp(self, path_to_save):
-        """Creates a .bmp image from a single 8x8 or 16x16 tile."""
-        try:
-            image = Image.fromarray(self.toarray(), 'RGB')
-        except ValueError:
-            image = Image.fromarray(self.toarray(), 'P')
-        image.save(path_to_save + ".bmp")
+    def tobmp(self, path):
+        """
+        Creates a .bmp image.
 
-    def topng(self, path_to_save):
-        """Creates a .png image from a single 8x8 or 16x16 tile."""
+        Args:
+            path (str): the location to save to
+        """
         try:
             image = Image.fromarray(self.toarray(), 'RGB')
         except ValueError:
             image = Image.fromarray(self.toarray(), 'P')
-        image.save(path_to_save + ".png")
+        image.save(path + ".bmp")
+
+    def topng(self, path):
+        """
+        Creates a .png image from a single 8x8 or 16x16 tile.
+
+        Args:
+            path (str): the location to save to
+        """
+        try:
+            image = Image.fromarray(self.toarray(), 'RGB')
+        except ValueError:
+            image = Image.fromarray(self.toarray(), 'P')
+        image.save(path + ".png")
 
     def totile(self):
-        """Strips palette. Returns new unpacked Tile"""
+        """
+        Removes the RGB pixel values from the :obj:`ColorTile`.
+
+        Returns:
+            a new unpacked :obj:`Tile`.
+        """
         reversed_ = {v : k for k, v in self._palette.items()}
         stripped = [int(reversed_[d]) for d in self._data]
 
         return Tile(self._addr, bytes(stripped))
 
 def new(address, data, palette, dimensions=16):
+    """
+    A factory function.
+
+    Returns:
+        a :obj:`ColorTile`.
+    """
     return ColorTile(address, data, palette, dimensions)
 
 def from_tile(tile, palette):
+    """
+    A factory function.
+
+    Args:
+        tile (:obj:`Tile`): the :obj:`Tile` to be colored.
+        palette (dict): the color palette.
+
+    Returns:
+        a :obj:`ColorTile`.
+    """
     return ColorTile(tile.address, tile.data, palette, tile.dimensions)
 
 # For now just do image -> ColorTile leaving palette info intact.
 def from_image(image, address):
-    """Given an image returns a ColorTile."""
+    """
+    A factory function.
+
+    Args:
+        image (str): path to image
+        address (str): address in memory of :obj:`ColorTile`.
+
+    Returns:
+        a :obj:`ColorTile`.
+    """
     im = Image.open(image)
     dims = im.size[0]
 

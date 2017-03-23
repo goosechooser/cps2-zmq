@@ -6,13 +6,16 @@
 CPS2-ZMQ
 ========
 
-CPS2-ZMQ is a project comprised of packages to `gather` assets from the CPS2, and then `process` them for other use.
+CPS2-ZMQ is a project comprised of packages to :mod:`gather` assets from the CPS2, and then :mod:`process` them for other use.
 
 .. toctree::
    :maxdepth: 1
 
    whatdo
    setup
+   Sprite
+   ColorTile
+   cps2_zmq
 
 
 

@@ -6,9 +6,6 @@ Subpackages
 
 .. toctree::
 
-    cps2_zmq.gather
-    cps2_zmq.process
-
 Module contents
 ---------------
 
