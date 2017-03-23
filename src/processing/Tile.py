@@ -4,7 +4,22 @@ import numpy as np
 
 # Need to clean this file up
 class Tile(object):
+    """
+    Tile is a container for all the good stuff associated with the graphical tiles used by the CPS2.
+    Graphical tiles used by the CPS2 are sized 8x8, 16x16, or 32x32.
+    Tiles are packed using the 4BPP format. When unpacked a pixel's 'value' will range 0-15.
+    8x8 tiles are 32 bytes long.
+    16x16 tiles are made up of 4 8x8 tiles and these subtiles are row interleaved.
+    """
     def __init__(self, addr, data, dimensions=16):
+        """
+        Construct a new 'Tile' object.
+
+        Args:
+            addr (int): the address in memory the tile resides at
+            data (bytes): 32 bytes for a 8x8 tile or 128 bytes for a 16x16 tile
+            dimensions (int): 8 for an 8x8 tile, 16 for a 16x16 tile, defaults to 16
+        """
         self._addr = addr
         self._data = data
         self._dims = dimensions
@@ -17,7 +32,9 @@ class Tile(object):
 
     @property
     def address(self):
-        """Get the address in memory where the tile is located."""
+        """
+        Get the address in memory where the tile is located.
+        """
         return self._addr
 
     @address.setter
@@ -26,7 +43,9 @@ class Tile(object):
 
     @property
     def data(self):
-        """Get the pixel data."""
+        """
+        Get data.
+        """
         return self._data
 
     @data.setter
@@ -35,11 +54,19 @@ class Tile(object):
 
     @property
     def dimensions(self):
-        """Get the pixel value data."""
+        """
+        Get dimensions of the Tile
+        """
         return self._dims
 
-    # Rearranges inner 8x8 tiles, then converts contents
     def unpack(self):
+        """
+        Unpacks the Tile's data. If its a 16x16 tile, deinterleaves the 8x8 subtiles.
+        This converts the 4BPP values used by the CPS2 into 'pixel' values (0-15).
+
+        Returns:
+            a bytes() of the unpacked data.
+        """
         tile_fmt = Struct(32 * 'c')
         tile_iter = tile_fmt.iter_unpack(self._data)
 
@@ -57,10 +84,15 @@ class Tile(object):
 
     # Converts contents, then rearranges innter 8x8 tiles
     def pack(self, data):
-        """Converts pixel values into 4bpp and packs it for Tile use.
-        Returns bytes()
+        """
+        Converts 'pixel' values (0-15) into the 4BPP format.
+        If its a 16x16 Tile, interleaves the 8x8 subtiles.
+
+        Args:
+            data (bytes()): the data to be packed into the Tile
         """
 
+        #Need exception handling for packing incorrectly sized data
         tile_fmt = Struct(32 * 'c')
         tile_iter = tile_fmt.iter_unpack(data)
 
@@ -70,33 +102,78 @@ class Tile(object):
         if self._dims == 16:
             self._data = Tile._deinterleave_subtiles(self._data)
 
-    # Needs to be fixed to reflect changes to unpack
     def toarray(self):
-        """Uses 8x8 or 16x16 Tile data to create an array of the tile's data.
+        """
+        Converts the Tile data into a correctly shaped numpy array.
 
-        Returns an array.
+        Returns:
+            a numpy.array
         """
         arr = np.frombuffer(self._data, dtype=np.uint8).reshape((self._dims, self._dims))
         return arr
 
-    def tobmp(self, path_to_save):
-        """Creates a .bmp image from a single 8x8 or 16x16 tile."""
-        image = Image.fromarray(self.toarray(), 'P')
-        image.save(path_to_save + ".bmp")
+    def tobmp(self, path):
+        """
+        Creates a .bmp image from a single 8x8 or 16x16 tile.
 
-    def topng(self, path_to_save):
-        """Creates a .bmp image from a single 8x8 or 16x16 tile."""
+        Args:
+            path (str): the location to save to
+        """
         image = Image.fromarray(self.toarray(), 'P')
-        image.save(path_to_save + ".png")
+        image.save(path + ".bmp")
+
+    def topng(self, path):
+        """
+        Creates a .png image from a single 8x8 or 16x16 tile.
+
+        Args:
+            path (str): the location to save to
+        """
+        image = Image.fromarray(self.toarray(), 'P')
+        image.save(path + ".png")
 
     # unpacking tiles
     @staticmethod
+    def _bitplanes_to_tile(data):
+        """
+        A private method.
+
+        Unpacks the 4BPP values and converts them to pixel values.
+        Args:
+            data (bytes()): 32 bytes of 4BPP data
+        Returns:
+            bytes() of length 64 for an 8x8 tile
+        """
+        bitplanes = Tile._unpack_bitplanes(data)
+
+        pixels = []
+        for i in range(0, 8):
+            temp_val = [bitplanes[0][i], bitplanes[1][i],
+                        bitplanes[2][i], bitplanes[3][i]]
+            row = Tile._make_row_of_pixels(temp_val)
+
+            pixels.append(row)
+
+        return b''.join(pixels)
+
+    @staticmethod
     def _unpack_bitplanes(data):
-        """The values that make up a row of pixels are organized like:
+        """
+        A private method.
+
+        The 4BPP values that make up a row of pixels are organized like:
         [bp1-row1] [bp2-row1] [bp3-row1] [bp4-row1]...
         [bp1-row8] [bp2-row8] [bp3-row8] [bp4-row8]
 
-        Returns a list of lists containing bitplane values (bytes).
+        Args:
+            data (bytes()):
+
+        Returns:
+            a list of 4 lists containing bitplane values (bytes) organized like:
+            [bp1-row1] .. [bp1-row8]
+            [bp2-row1] .. [bp2-row8]
+            [bp3-row1] .. [bp3-row8]
+            [bp4-row1] .. [bp4-row8]
         """
         planes = [[], [], [], []]
         data_iter = Struct('cccc').iter_unpack(data)
@@ -111,9 +188,16 @@ class Tile(object):
 
     @staticmethod
     def _make_row_of_pixels(bitplane_rows):
-        """Converts the 4 bytes of bitplanes 1-4 for a given row into a row of pixel values
+        """
+        A private method.
 
-        Returns bytes()
+        Converts the 4 bytes of bitplanes 1-4 for a given row into a row of pixel values
+
+        Args:
+            bitplane_rows ([[], [], [], []]): 4 lists containing 8 lists of 4BPP values
+
+        Returns:
+            bytes()
         """
         mask = int(b'00000001')
         row_of_pixels = []
@@ -126,20 +210,6 @@ class Tile(object):
         row_of_pixels.reverse()
 
         return b''.join(row_of_pixels)
-
-    @staticmethod
-    def _bitplanes_to_tile(data):
-        bitplanes = Tile._unpack_bitplanes(data)
-
-        pixels = []
-        for i in range(0, 8):
-            temp_val = [bitplanes[0][i], bitplanes[1][i],
-                        bitplanes[2][i], bitplanes[3][i]]
-            row = Tile._make_row_of_pixels(temp_val)
-
-            pixels.append(row)
-
-        return b''.join(pixels)
 
     # packing tiles
     @staticmethod
@@ -165,6 +235,28 @@ class Tile(object):
 
         return bytearray(bitplanes)
 
+    # Would need to interleave like:
+    # [subtile1-row1] [subtile3-row1]
+    # [subtile1-row16] [subtile3-row16]
+    # [subtile2-row1] [subtile4-row1]
+    # [subtile4-row16] [subtile4-row16]
+    @staticmethod
+    def _interleave_subtiles(tile_data):
+        """Row interleaves the 4 8x8 subtiles in a 16x16 tile.
+
+        Returns bytes().
+        """
+        tile_fmt = Struct(32 * 'c')
+        tile_iter = tile_fmt.iter_unpack(tile_data)
+
+        subtiles = [b''.join(subtile) for subtile in tile_iter]
+
+        top = Tile._interleave(subtiles[0], subtiles[2])
+        bottom = Tile._interleave(subtiles[1], subtiles[3])
+
+        interleaved = [*top, *bottom]
+        return b''.join(interleaved)
+
     @staticmethod
     def _interleave(subtile1, subtile2):
         """Interleaves two 8x8 tiles like
@@ -185,26 +277,7 @@ class Tile(object):
 
         return interleaved
 
-    #Would need to interleave like [subtile1-row1] [subtile3-row1]
-    #                          ... [subtile1-row16] [subtile3-row16]
-    #                              [subtile2-row1] [subtile4-row1]
-    #                          ... [subtile4-row16] [subtile4-row16]
-    @staticmethod
-    def _interleave_subtiles(tile_data):
-        """Row interleaves the 4 8x8 subtiles in a 16x16 tile.
-
-        Returns bytes().
-        """
-        tile_fmt = Struct(32 * 'c')
-        tile_iter = tile_fmt.iter_unpack(tile_data)
-
-        subtiles = [b''.join(subtile) for subtile in tile_iter]
-
-        top = Tile._interleave(subtiles[0], subtiles[2])
-        bottom = Tile._interleave(subtiles[1], subtiles[3])
-
-        interleaved = [*top, *bottom]
-        return b''.join(interleaved)
+    
 
     @staticmethod
     def _deinterleave_subtiles(data):
@@ -239,7 +312,16 @@ def new(addr, data, dimensions=16):
     return tile
 
 def from_image(image, address):
-    """Given an image returns a Tile."""
+    """
+    Given an image returns a Tile.
+
+    Args:
+        image (str): path to image
+        address (str): address in memory of Tile
+
+    Returns:
+        a Tile
+    """
     im = Image.open(image)
     dims = im.size[0]
 
@@ -248,6 +330,9 @@ def from_image(image, address):
     return tile
 
 class EmptyTile(Tile):
+    """
+    EmptyTile is a placeholder.
+    """
     def __init__(self, dimensions):
         super().__init__('BLANK', None, dimensions)
 

@@ -7,13 +7,13 @@ class Frame(object):
     """
     def __init__(self, fnumber, sprites, palettes):
         """
-        Construct a new 'Frame' object. 
+        Construct a new 'Frame' object.
         In most cases you want to use the factory methods
 
         Args:
-            fnumber: The frame number
-            palettes: The 32 x 16 colors of Frame
-            sprites: The Sprites of Frame
+            fnumber (int): the frame number
+            palettes (dict): the 32 x 16 colors of Frame
+            sprites ([Sprite]): the Sprites of Frame
         """
         self._fnumber = fnumber
         self._palettes = palettes
@@ -60,7 +60,7 @@ class Frame(object):
         Saves the Frame as a PNG file.
 
         Args:
-            fname (str): the name to save the PNG file as
+            fname (str): the name to save the PNG file as.
             imsize ((int, int)): The size of the PNG file. A tuple.
         """
         canvas = Image.new('RGB', imsize)
