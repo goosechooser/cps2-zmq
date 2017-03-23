@@ -1,4 +1,4 @@
-cps2_zmq.gather package
+gather package
 =======================
 
 Submodules

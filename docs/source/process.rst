@@ -1,7 +1,7 @@
-cps2_zmq.process package
+process package
 ======================
 
-Submodules
+Modules
 ----------
 
 cps2_zmq.process.ColorTile module

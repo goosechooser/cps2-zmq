@@ -1,5 +1,5 @@
 cps2_zmq package
-===========
+================
 
 Subpackages
 -----------

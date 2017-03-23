@@ -3,15 +3,16 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to CPS2-ZMQ's documentation!
-=======================================
+CPS2-ZMQ
+========
 
-Contents:
+CPS2-ZMQ is a project comprised of packages to `gather` assets from the CPS2, and then `process` them for other use.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   modules
+   whatdo
+   setup
 
 
 
