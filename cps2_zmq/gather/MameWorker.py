@@ -92,10 +92,10 @@ class MameWorker(Thread):
 
                 # Consider just writing message + masked sprites to file?
                 # would decouple MameSink/MameClient from cps2_zmq.process
-                sprites = [Sprite.fromdict(m) for m in masked]
+                sprites = [Sprite.from_dict(m) for m in masked]
 
                 frame = Frame.new(message['frame_number'], sprites, palettes)
-                frame.tofile("frame_data\\")
+                frame.to_file("frame_data\\")
                 # frame.topng('_'.join(["frame_img\\frame", str(frame.fnumber)]))
             else:
                 result = {}

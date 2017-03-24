@@ -56,7 +56,7 @@ class Frame(object):
     # Only needs to create a png, doesn't need to color in sprites
     # Issues arise from assuming all the sprites are already colored
     # Uncolored tiles are output by using 'P'(palette) mode
-    def topng(self, fname, imsize=(400, 400)):
+    def to_png(self, fname, imsize=(400, 400)):
         """
         Saves the Frame as a PNG file.
 
@@ -67,19 +67,20 @@ class Frame(object):
         canvas = Image.new('RGB', imsize)
         for sprite in self._sprites:
             canvas.paste(
-                Image.fromarray(sprite.toarray(), 'RGB'),
+                Image.fromarray(sprite.to_array(), 'RGB'),
                 sprite.location
                 )
         canvas.save('.'.join([fname, 'png']))
 
-    def tofile(self, path):
+    def to_file(self, path):
         """
         Saves the Frame object as a json encoded file.
 
         Args:
             path (str): The location to save to.
         """
-        file_name = '.'.join([str(self._fnumber), 'json'])
+        name = '_'.join(['frame', str(self._fnumber)])
+        file_name = '.'.join([name, 'json'])
         path = '\\'.join([path, file_name])
 
         with open(path, 'w') as f:
@@ -105,7 +106,7 @@ def new(fnumber, sprites, palettes):
 
     return Frame(fnumber, sprites, converted)
 
-def fromfile(path):
+def from_file(path):
     """
     Returns a Frame from a json encoded file.
 

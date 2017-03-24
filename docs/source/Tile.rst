@@ -20,9 +20,9 @@ The :py:class:`~cps2_zmq.process.Tile.Tile` class has the following methods
 
 .. automethod:: cps2_zmq.process.Tile.Tile.unpack
 .. automethod:: cps2_zmq.process.Tile.Tile.pack
-.. automethod:: cps2_zmq.process.Tile.Tile.toarray
-.. automethod:: cps2_zmq.process.Tile.Tile.tobmp
-.. automethod:: cps2_zmq.process.Tile.Tile.topng
+.. automethod:: cps2_zmq.process.Tile.Tile.to_array
+.. automethod:: cps2_zmq.process.Tile.Tile.to_bmp
+.. automethod:: cps2_zmq.process.Tile.Tile.to_png
 
 Factories
 ---------

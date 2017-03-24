@@ -18,10 +18,10 @@ The ColorTile Class
 
 The :py:class:`~cps2_zmq.process.ColorTile.ColorTile` class has the following methods
 
-.. automethod:: cps2_zmq.process.ColorTile.ColorTile.toarray
-.. automethod:: cps2_zmq.process.ColorTile.ColorTile.tobmp
-.. automethod:: cps2_zmq.process.ColorTile.ColorTile.topng
-.. automethod:: cps2_zmq.process.ColorTile.ColorTile.totile
+.. automethod:: cps2_zmq.process.ColorTile.ColorTile.to_array
+.. automethod:: cps2_zmq.process.ColorTile.ColorTile.to_bmp
+.. automethod:: cps2_zmq.process.ColorTile.ColorTile.to_png
+.. automethod:: cps2_zmq.process.ColorTile.ColorTile.to_tile
 
 Factories
 ---------

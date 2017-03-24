@@ -1,6 +1,6 @@
+import jsonpickle
 from PIL import Image
 import numpy as np
-np.set_printoptions(threshold=np.inf)
 
 from cps2_zmq.process import Tile, ColorTile
 
@@ -88,7 +88,7 @@ class Sprite(object):
     def width(self):
         return self._size[0]
 
-    def toarray(self, flip=True):
+    def to_array(self, flip=True):
         """
         Provides contents of Sprite as a numpy array.
         Does any necessary flips in the process.
@@ -100,7 +100,7 @@ class Sprite(object):
             a 2D numpy array.
         """
 
-        arrays = [tile.toarray() for tile in self._tiles]
+        arrays = [tile.to_array() for tile in self._tiles]
         array2d = list2d(arrays, self._size)
         array_rows = [np.concatenate(row, axis=1) for row in array2d]
         preflip = np.concatenate(array_rows, axis=0)
@@ -124,27 +124,27 @@ class Sprite(object):
                        for tile in self._tiles
                        if isinstance(tile, Tile.Tile)]
 
-    def tobmp(self, path_to_save):
+    def to_bmp(self, path_to_save):
         """
         Creates a .bmp file
         """
         try:
-            image = Image.fromarray(self.toarray(), 'RGB')
+            image = Image.fromarray(self.to_array(), 'RGB')
         except ValueError:
-            image = Image.fromarray(self.toarray(), 'P')
+            image = Image.fromarray(self.to_array(), 'P')
         image.save(path_to_save + ".bmp")
 
-    def topng(self, path_to_save):
+    def to_png(self, path_to_save):
         """
         Creates a .png file
         """
         try:
-            image = Image.fromarray(self.toarray(), 'RGB')
+            image = Image.fromarray(self.to_array(), 'RGB')
         except ValueError:
-            image = Image.fromarray(self.toarray(), 'P')
+            image = Image.fromarray(self.to_array(), 'P')
         image.save(path_to_save + ".png")
 
-    def totile(self):
+    def to_tile(self):
         """
         This method is *probably* used when writing the contents of the :obj:`Sprite` to file.
         Converts any :obj:`ColorTile` objects the :obj:`Sprite` has to :obj:`Tile` objects.
@@ -152,7 +152,21 @@ class Sprite(object):
         Returns:
             a list of Tiles.
         """
-        return [t.totile() if isinstance(t, ColorTile.ColorTile) else t for t in self.tiles]
+        return [t.to_tile() if isinstance(t, ColorTile.ColorTile) else t for t in self.tiles]
+
+    def to_file(self, path):
+        """
+        Saves the Sprite object as a json encoded file.
+
+        Args:
+            path (str): The location to save to.
+        """
+        name = '_'.join(['sprite', str(self._base_tile)])
+        file_name = '.'.join([name, 'json'])
+        path = '\\'.join([path, file_name])
+
+        with open(path, 'w') as f:
+            f.write(jsonpickle.encode(self))
 
 # todo: exception handling for sizing issues
 def list2d(list_, size):
@@ -173,7 +187,7 @@ def list2d(list_, size):
 
 # Factories
 # todo: exception handling related to improperly formed dict
-def fromdict(dict_):
+def from_dict(dict_):
     """
     A factory method to create a Sprite from a dict of params.
 
@@ -202,6 +216,21 @@ def fromdict(dict_):
             tiles.append(Tile.Tile(addr, None))
 
     return Sprite(tile_number, tiles, palnum, loc, size, flips, priority=dict_['priority'])
+
+def from_file(path):
+    """
+    Returns a Sprite from a json encoded file.
+
+    Args:
+        path (str): path to the json file.
+
+    Returns:
+        a Sprite object
+    """
+    with open(path, 'r') as f:
+        sprite = jsonpickle.decode(f.read())
+
+    return sprite
 
 def from_image(image, sprite):
     """
@@ -243,6 +272,3 @@ def from_image(image, sprite):
     new_sprite = sprite
     new_sprite.tiles = tiles
     return new_sprite
-
-def to_file():
-    pass

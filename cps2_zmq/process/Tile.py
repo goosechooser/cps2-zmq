@@ -107,7 +107,7 @@ class Tile(object):
         if self._dims == 16:
             self._data = Tile._deinterleave_subtiles(self._data)
 
-    def toarray(self):
+    def to_array(self):
         """
         Converts the :obj:`Tile` data into a correctly shaped numpy array.
 
@@ -117,24 +117,24 @@ class Tile(object):
         arr = np.frombuffer(self._data, dtype=np.uint8).reshape((self._dims, self._dims))
         return arr
 
-    def tobmp(self, path):
+    def to_bmp(self, path):
         """
         Creates a .bmp image from a single 8x8 or 16x16 tile.
 
         Args:
             path (str): the location to save to
         """
-        image = Image.fromarray(self.toarray(), 'P')
+        image = Image.fromarray(self.to_array(), 'P')
         image.save(path + ".bmp")
 
-    def topng(self, path):
+    def to_png(self, path):
         """
         Creates a .png image from a single 8x8 or 16x16 tile.
 
         Args:
             path (str): the location to save to
         """
-        image = Image.fromarray(self.toarray(), 'P')
+        image = Image.fromarray(self.to_array(), 'P')
         image.save(path + ".png")
 
     # unpacking tiles
@@ -339,7 +339,7 @@ class EmptyTile(Tile):
     def __init__(self, dimensions):
         super().__init__('BLANK', None, dimensions)
 
-    def toarray(self):
+    def to_array(self):
         zero = int('0x20', 16).to_bytes(1, byteorder='big')
         row = [zero] * self._dims
         tile = [row] * self._dims

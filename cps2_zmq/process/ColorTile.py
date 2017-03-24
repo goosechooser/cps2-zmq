@@ -33,7 +33,7 @@ class ColorTile(Tile):
         colors = [self._palette[str(int.from_bytes(i[0], byteorder='big'))] for i in tile_iter]
         self._data = colors
 
-    def toarray(self):
+    def to_array(self):
         """
         Converts the :obj:`ColorTile` data into a correctly shaped numpy array.
 
@@ -51,7 +51,7 @@ class ColorTile(Tile):
         colorarr = np.dstack(arrays)
         return colorarr
 
-    def tobmp(self, path):
+    def to_bmp(self, path):
         """
         Creates a .bmp image.
 
@@ -59,12 +59,12 @@ class ColorTile(Tile):
             path (str): the location to save to
         """
         try:
-            image = Image.fromarray(self.toarray(), 'RGB')
+            image = Image.fromarray(self.to_array(), 'RGB')
         except ValueError:
-            image = Image.fromarray(self.toarray(), 'P')
+            image = Image.fromarray(self.to_array(), 'P')
         image.save(path + ".bmp")
 
-    def topng(self, path):
+    def to_png(self, path):
         """
         Creates a .png image from a single 8x8 or 16x16 tile.
 
@@ -72,12 +72,12 @@ class ColorTile(Tile):
             path (str): the location to save to
         """
         try:
-            image = Image.fromarray(self.toarray(), 'RGB')
+            image = Image.fromarray(self.to_array(), 'RGB')
         except ValueError:
-            image = Image.fromarray(self.toarray(), 'P')
+            image = Image.fromarray(self.to_array(), 'P')
         image.save(path + ".png")
 
-    def totile(self):
+    def to_tile(self):
         """
         Removes the RGB pixel values from the :obj:`ColorTile`.
 

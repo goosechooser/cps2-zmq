@@ -11,7 +11,7 @@ functions for converting the :py:mod:`~cps2_zmq.process.Frame` to a variety of f
 Example
 --------
 
-A Frame acquired by using :py:mod:`~cps2_zmq.gather` and then printed with :py:meth:`~cps2_zmq.process.Frame.Frame.topng`: 
+A Frame acquired by using :py:mod:`~cps2_zmq.gather` and then printed with :py:meth:`~cps2_zmq.process.Frame.Frame.to_png`: 
 
     .. image:: ../../../cps2-zmq-docs/images/Frame_ex.png
         :width: 400 px
@@ -26,14 +26,14 @@ The Frame Class
 The :py:class:`~cps2_zmq.process.Frame.Frame` class has the following methods
 
 .. automethod:: cps2_zmq.process.Frame.Frame.add_sprites
-.. automethod:: cps2_zmq.process.Frame.Frame.topng
-.. automethod:: cps2_zmq.process.Frame.Frame.tofile
+.. automethod:: cps2_zmq.process.Frame.Frame.to_png
+.. automethod:: cps2_zmq.process.Frame.Frame.to_file
 
 Factories
 ---------
 
 .. autofunction:: cps2_zmq.process.Frame.new
-.. autofunction:: cps2_zmq.process.Frame.fromfile
+.. autofunction:: cps2_zmq.process.Frame.from_file
 
 Functions
 ---------

@@ -13,14 +13,14 @@ def test_colortile(testframe, gfxfile):
 # WORKS
 # Not a real test though
 # @pytest.mark.skip
-def test_topng(testframe, gfxmap):
+def test_to_png(testframe, gfxmap):
     for i, sprite in enumerate(testframe.sprites):
         palette = testframe.palettes[sprite.palnum]
         testframe.sprites[i].tiles = tile_operations.read_tiles_from_file(gfxmap, sprite.tiles)
         sprite.color_tiles(palette)
-        sprite.topng('\\'.join(['frame_img', str(sprite.base_tile)]))
+        sprite.to_png('\\'.join(['frame_img', str(sprite.base_tile)]))
 
-def test_totile(testframe, gfxfile):
+def test_to_tile(testframe, gfxfile):
     sprite = testframe.sprites[0]
     palette = testframe.palettes[sprite.palnum]
     sprite.tiles = tile_operations.read_tiles_from_file(gfxfile, sprite.tiles)
@@ -28,7 +28,7 @@ def test_totile(testframe, gfxfile):
     base_tiles = sprite.tiles
 
     sprite.color_tiles(palette)
-    assert base_tiles == sprite.totile()
+    assert base_tiles == sprite.to_tile()
 
 # @pytest.fixture(scope='session')
 # @pytest.mark.skip
@@ -39,7 +39,7 @@ def test_from_image(tmpdir_factory, testframe, gfxfile):
         sprite.color_tiles(palette)
         base = tmpdir_factory.mktemp('data')
         fn = base.join('spritetestpng')
-        sprite.topng(str(fn))
+        sprite.to_png(str(fn))
 
         fn2 = base.join('spritetestpng.png')
         test_sprite = Sprite.from_image(str(fn2), sprite)

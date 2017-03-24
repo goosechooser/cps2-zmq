@@ -14,14 +14,14 @@ def test_from_image_colortile(tmpdir_factory, testframe, gfxfile):
 
     base = tmpdir_factory.mktemp('data')
     fn = base.join('colortestpng')
-    tile.topng(str(fn))
+    tile.to_png(str(fn))
 
     fn2 = base.join('colortestpng.png')
     test_tile = ColorTile.from_image(str(fn2), tile.address)
 
     assert tile.data == test_tile.data
 
-def test_totile(testframe, gfxfile):
+def test_to_tile(testframe, gfxfile):
     for sprite in testframe.sprites:
         palette = testframe.palettes[sprite.palnum]
         sprite.tiles = tile_operations.read_tiles_from_file(gfxfile, sprite.tiles)
@@ -29,5 +29,5 @@ def test_totile(testframe, gfxfile):
 
         sprite.color_tiles(palette)
         for i, tile in enumerate(sprite.tiles):
-            stripped = tile.totile()
+            stripped = tile.to_tile()
             assert basetiles[i] == stripped

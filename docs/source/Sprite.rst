@@ -11,7 +11,7 @@ functions for converting the :py:mod:`~cps2_zmq.process.Sprite` to a variety of 
 Examples
 --------
 
-A few sprites acquired by using :py:mod:`~cps2_zmq.gather` and then printed with :py:meth:`~cps2_zmq.process.Sprite.Sprite.topng`: 
+A few sprites acquired by using :py:mod:`~cps2_zmq.gather` and then printed with :py:meth:`~cps2_zmq.process.Sprite.Sprite.to_png`: 
     .. image:: ../../../cps2-zmq-docs/images/sprite_ex_1.png
         :width: 32 px
         :height: 48 px
@@ -30,15 +30,15 @@ The Sprite Class
 The :py:class:`~cps2_zmq.process.Sprite.Sprite` class has the following methods
 
 .. automethod:: cps2_zmq.process.Sprite.Sprite.color_tiles
-.. automethod:: cps2_zmq.process.Sprite.Sprite.toarray
-.. automethod:: cps2_zmq.process.Sprite.Sprite.tobmp
-.. automethod:: cps2_zmq.process.Sprite.Sprite.topng
-.. automethod:: cps2_zmq.process.Sprite.Sprite.totile
+.. automethod:: cps2_zmq.process.Sprite.Sprite.to_array
+.. automethod:: cps2_zmq.process.Sprite.Sprite.to_bmp
+.. automethod:: cps2_zmq.process.Sprite.Sprite.to_png
+.. automethod:: cps2_zmq.process.Sprite.Sprite.to_tile
 
 Factories
 ---------
 
-.. autofunction:: cps2_zmq.process.Sprite.fromdict
+.. autofunction:: cps2_zmq.process.Sprite.from_dict
 .. autofunction:: cps2_zmq.process.Sprite.from_image
 
 Functions
