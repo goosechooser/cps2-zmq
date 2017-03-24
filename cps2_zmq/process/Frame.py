@@ -5,20 +5,20 @@ class Frame(object):
     """
     Frame is a container of Sprites. It is related to the frames drawn by the CPS2 hardware.
     Ideally this would provide methods for manipulating sprites en masse.
+
+    Attributes:
+        fnumber (int): the frame number.\
+        Frames should have a unique fnumber (linearly increasing).
+        sprites (:obj:`list` of :obj:`Sprite.Sprite`): the Sprites of the Frame
+        palettes (dict): contains the 32 palettes used by Sprites/ColorTiles in the Frame
     """
     def __init__(self, fnumber, sprites, palettes):
         """
-        Construct a new 'Frame' object.
-        In most cases you want to use the factory methods
-
-        Args:
-            fnumber (int): the frame number. Frames should have a unique fnumber (linearly increasing).
-            palettes (dict): contains the 32 palettes used by Sprites/ColorTiles in the Frame
-            sprites (:obj:`list` of :obj:`Sprite.Sprite`): the Sprites of the Frame
+        Construct a new 'Frame' object. In most cases you want to use the factory methods
         """
         self._fnumber = fnumber
-        self._palettes = palettes
         self._sprites = sprites
+        self._palettes = palettes
 
     def __repr__(self):
         return "Frame {} has {} sprites".format(self._fnumber, len(self._sprites))
@@ -135,6 +135,8 @@ def _argb_to_rgb(color):
 
     return (int(color[1] * 2, 16), int(color[2] * 2, 16), int(color[3] * 2, 16))
 
-# One day
 def from_image(image, frame):
+    """
+    Unimplemented. One day.
+    """
     pass

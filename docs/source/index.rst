@@ -13,9 +13,8 @@ CPS2-ZMQ is a project comprised of packages to :mod:`gather` assets from the CPS
 
    whatdo
    setup
-   Sprite
-   ColorTile
-   cps2_zmq
+   gather
+   process
 
 
 
