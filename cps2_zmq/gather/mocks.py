@@ -2,6 +2,7 @@
 import time
 from threading import Thread
 import zmq
+import msgpack
 
 # a mock mame server for debugging client side
 # a mock client for debugging server side
@@ -37,11 +38,20 @@ class MockServer():
         print("starting server")
 
         message = 'ok'
+        # while message != "closing":
+        for i in range(1):
+            message = self._subscriber.recv()
+            # print('message', message)
+            # print('message type', type(message))
 
-        while message != "closing":
-            message = self._subscriber.recv_json()
+            message = msgpack.unpackb(message, encoding='utf-8')
+            print('frame number', message['frame_number'])
+            print('palettes', message['palettes'])
+            print('sprites', message['sprites'])
+
             message = message['frame_number']
-            print(message)
+            # print(message)
+        print('donezo')
 
 
 def main():

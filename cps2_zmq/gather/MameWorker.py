@@ -2,6 +2,7 @@
 
 import random
 from threading import Thread
+import msgpack
 import zmq
 from cps2_zmq.process import Sprite, Frame
 
@@ -55,7 +56,9 @@ class MameWorker(Thread):
             polled = dict(self._poller.poll())
 
             if polled.get(self._puller) == zmq.POLLIN:
-                message = self._puller.recv_json()
+                message = self._puller.recv()
+                message = msgpack.unpackb(message, encoding='utf-8')
+
                 frame_number = message['frame_number']
 
                 if frame_number == 'closing' or frame_number < 1140:
@@ -70,7 +73,8 @@ class MameWorker(Thread):
 
         while self._state == 'cleanup':
             try:
-                message = self._puller.recv_json(zmq.NOBLOCK)
+                message = self._puller.recv(zmq.NOBLOCK)
+                message = msgpack.unpackb(message, encoding='utf-8')
             except zmq.Again:
                 self._state = 'done'
                 self._pusher.send_pyobj("threaddead")

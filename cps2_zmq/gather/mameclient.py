@@ -1,6 +1,7 @@
 # pylint: disable=E1101
 
 import zmq
+import msgpack
 from cps2_zmq.gather.MameSink import MameSink
 from cps2_zmq.gather.MameWorker import MameWorker
 
@@ -59,13 +60,15 @@ class MameClient():
         msgs_recv = 0
         while self._working:
             #receive from server/MAME
-            message = self._serversub.recv_json()
+            message = self._serversub.recv()
+            message = msgpack.unpackb(message, encoding='utf-8')
             msgs_recv += 1
             if message['frame_number'] == 'closing':
                 self._working = False
                 self._serversub.close()
 
-            self._workpusher.send_json(message)
+            message = msgpack.packb(message)
+            self._workpusher.send(message)
 
         print(msgs_recv, "Client Received")
 
