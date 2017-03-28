@@ -12,7 +12,7 @@ def test_colortile(testframe, gfxfile):
 
 # WORKS
 # Not a real test though
-# @pytest.mark.skip
+@pytest.mark.skip
 def test_to_png(testframe, gfxmap):
     for i, sprite in enumerate(testframe.sprites):
         palette = testframe.palettes[sprite.palnum]

@@ -100,7 +100,6 @@ class MameWorker(Thread):
 
                 frame = Frame.new(message['frame_number'], sprites, palettes)
                 frame.to_file("frame_data\\")
-                # frame.topng('_'.join(["frame_img\\frame", str(frame.fnumber)]))
             else:
                 result = {}
         else:
@@ -118,7 +117,8 @@ def mask_all(sprites):
 
     Args:
         sprites (dict): This is a dict because\
-        I can't figure out how to have the server send sprite data as a list.
+        I can't figure out how to have the server send sprite data as a list.\
+        Need to recheck this later.
 
     Returns:
         a list.
@@ -152,7 +152,7 @@ def sprite_mask(byte_data):
     #Y flip, X flip (1= enable, 0= disable)
     dict_['yflip'] = (byte_data[3] & 0x0040) >> 69
     dict_['xflip'] = (byte_data[3] & 0x0020) >> 5
-    dict_['pal_number'] = "{0:x}".format(byte_data[3] & 0x001F)
+    dict_['pal_number'] = "{0:d}".format(byte_data[3] & 0x001F)
     # dict_['mem_addr'] = "{0:x}".format(byte_data[4])
 
     return dict_

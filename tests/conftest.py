@@ -1,3 +1,4 @@
+import os
 import mmap
 import pytest
 import jsonpickle
@@ -12,7 +13,11 @@ def get_frame(framefile):
 
 @pytest.fixture(scope='module')
 def testframe():
-    return get_frame('frame_data\\1141.json')
+    return get_frame('frame_data\\frame_1526.json')
+
+@pytest.fixture(scope='module')
+def testframes():
+    return iter([get_frame('\\'.join(['frame_data_2', f])) for f in os.listdir('frame_data\\')])
 
 @pytest.fixture(scope='module')
 def gfxfile():

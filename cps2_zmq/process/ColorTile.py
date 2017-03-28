@@ -21,7 +21,7 @@ class ColorTile(Tile):
         """
         super(ColorTile, self).__init__(addr, data, dimensions)
         self._palette = palette
-        if palette is not None:
+        if self._palette is not None:
             self._color()
 
     def __repr__(self):

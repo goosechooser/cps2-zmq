@@ -30,7 +30,7 @@ class Tile(object):
         self._dims = dimensions
 
     def __eq__(self, other):
-        return self._data == other.data
+        return self._addr == other.address and self._data == other.data
 
     def __repr__(self):
         return ' '.join(["Tile:", str(self._addr), 'size:', str(self._dims)])
