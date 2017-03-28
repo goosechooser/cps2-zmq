@@ -43,7 +43,7 @@ def test_from_image(tmpdir_factory):
 
     base = tmpdir_factory.mktemp('data')
     fn = base.join('testbmp')
-    tile.tobmp(str(fn))
+    tile.to_bmp(str(fn))
 
     fn2 = base.join('testbmp.bmp')
     test_tile = Tile.from_image(str(fn2), tile.address)
