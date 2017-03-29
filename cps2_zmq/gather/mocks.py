@@ -39,15 +39,16 @@ class MockServer():
 
         message = 'ok'
         # while message != "closing":
-        for i in range(1):
+        for i in range(2000):
             message = self._subscriber.recv()
             # print('message', message)
             # print('message type', type(message))
 
             message = msgpack.unpackb(message, encoding='utf-8')
             print('frame number', message['frame_number'])
-            print('palettes', message['palettes'])
+            # print('palettes', message['palettes'])
             print('sprites', message['sprites'])
+            print('type o sprites', type(message['sprites']))
 
             message = message['frame_number']
             # print(message)

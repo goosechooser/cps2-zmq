@@ -101,7 +101,8 @@ def new(fnumber, sprites, palettes):
     """
     converted = {}
     for k, v in palettes.items():
-        conv = {kk : _argb_to_rgb(hex(color)[2:]) for kk, color in v.items()}
+        # conv = {kk : _argb_to_rgb(hex(color)[2:]) for kk, color in v.items()}
+        conv = [_argb_to_rgb(hex(color)[2:]) for color in v]
         converted[k] = conv
 
     return Frame(fnumber, sprites, converted)

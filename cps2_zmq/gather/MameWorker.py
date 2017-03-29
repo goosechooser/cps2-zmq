@@ -123,7 +123,7 @@ def mask_all(sprites):
     Returns:
         a list.
     """
-    masked = [sprite_mask(v) for k, v in sprites.items() if all(v)]
+    masked = [sprite_mask(s) for s in sprites if all(s)]
     return masked
 
 def sprite_mask(byte_data):

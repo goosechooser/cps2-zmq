@@ -30,7 +30,7 @@ class ColorTile(Tile):
     # todo: exception handling for palettes that don't have the correct key(s)
     def _color(self):
         tile_iter = iter_unpack('c', self._data)
-        colors = [self._palette[str(int.from_bytes(i[0], byteorder='big'))] for i in tile_iter]
+        colors = [self._palette[int.from_bytes(i[0], byteorder='big')] for i in tile_iter]
         self._data = colors
 
     def to_array(self):
@@ -76,7 +76,8 @@ class ColorTile(Tile):
         except ValueError:
             image = Image.fromarray(self.to_array(), 'P')
         image.save(path + ".png")
-
+    
+    # Broken atm
     def to_tile(self):
         """
         Removes the RGB pixel values from the :obj:`ColorTile`.

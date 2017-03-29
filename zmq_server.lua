@@ -1,14 +1,15 @@
 -- mame uses its own package path and so it doesn't find lzmq.threads for whatever reason??
 -- package.path = '.\\?.lua;\\?\\init.lua;C:\\lua-5.3.3\\systree\\share\\lua\\5.3\\?\\init.lua;C:\\lua-5.3.3\\systree\\share\\lua\\5.3\\?.lua;C:\\Program Files (x86)\\LuaRocks\\lua\\'
-
-local json = require("json")
+-- local json = require("json")
 local zmq = require("lzmq")
+local mp = require("MessagePack")
 
 -- RUN_LENGTH at 1024 manages to send all the data with no slow down
 -- RUN_LENGTH of 2048 causes the machine to slow to 70%
 -- not sure if multiple passes at different times or multiple processes at once is preferable (read: easier)
 local SPRITE_START_ADDR = 0x708000
-local RUN_LENGTH = 1024
+
+local RUN_LENGTH = 2000
 
 local s = manager:machine().screens[":screen"]
 local cpu = manager:machine().devices[":maincpu"]
@@ -16,6 +17,7 @@ local mem = cpu.spaces["program"]
 
 context = zmq.context()
 zassert = zmq.assert
+mp.set_string('string')
 
 -- Sprite RAM is two 8K SRAMs:
 -- One mapped to 700000-707FFF and the other to 708000-70FFFF
@@ -30,11 +32,12 @@ function read_sprite_ram(start_addr, num_of_entries)
 		local byte1 = mem:read_u16(start_addr + offset + 0x2)
 		local byte2 = mem:read_u16(start_addr + offset + 0x4)
 		local byte3 = mem:read_u16(start_addr + offset + 0x6)
-        sprite_ram[i-1] = {byte0, byte1, byte2, byte3} 
+        sprite_ram[i] = {byte0, byte1, byte2, byte3} 
 	end
 	return sprite_ram
 end
 
+-- TODO: write coroutine for this that sends frames of just difference
 -- Palette starts at 0x90C000 ends 0x3FF
 -- a collection of 32 palettes, each palette with 16 colors
 function get_palettes(addr)
@@ -45,7 +48,7 @@ function get_palettes(addr)
 		palette = {}
         local color_offset = 0x0
 
-		for j = 0, 15 do
+		for j = 1, 16 do
             palette[j] = mem:read_u16(addr + row_offset + color_offset)
             color_offset =  color_offset + 0x2
 		end
@@ -54,38 +57,6 @@ function get_palettes(addr)
 	end
 	return palettes
 end
-
--- threading DOESNT WORK (also the nature of threads in Lua is ... its own topic)
--- lzmq.threads doesn't seem to provide any benefit
--- thread.start() in MAME provided 'luaengine' doesn't work [for me/at all]
--- local thread_code = [[
---     local zmq = require "lzmq"
---     local zthreads = require "lzmq.threads"
---     zassert = zmq.assert
-
---     print('ye')
---     local context = zthreads.get_parent_ctx()
---     print("setting up subscriber")
---     local subscriber, err = context:socket{
---         zmq.SUB,
---         subscribe = '',
---         connect = "tcp://localhost:5557"
---     }
---     zassert(subscriber, err)
-
---     local i = 0
---     while i < 5 do
---         print('should block')
---         local message = subscriber:recv()
---         if message then
---             printf(message)
---             i = i + 1
---         end
---     end
-
---     subscriber:close()
-
--- ]]
 
 -- overall we're using a pub-sub model of messaging
 -- the instance of MAME acts like the 'server' and just sends data out
@@ -114,8 +85,7 @@ function send_message()
         palettes = palettes_
     }
 
--- serializing w/ json because im lazy
-    local message = json.encode(frame)
+    local message = mp.pack(frame)
 -- not sure if any benefit could come from using a multi-part messaging scheme
 -- im working on a machine with 16gb of ram so lmao you think im gonna make this leaner
     publisher:send(message)
@@ -133,12 +103,10 @@ publisher = setup_server()
 emu.register_stop(function()
     print("server closing")
     last_msg = {
-        frame_number = "closing",
-        sprites = "ok",
-        palette = "double ok"
+        frame_number = "closing"
     }
 
-    message = json.encode(last_msg)
+    message = mp.pack(last_msg)
     print('msg encoded')
     publisher:send(message)
     print('msg sent')
