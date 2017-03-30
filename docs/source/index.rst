@@ -11,11 +11,9 @@ CPS2-ZMQ is a project comprised of packages to :mod:`gather` assets from the CPS
 .. toctree::
    :maxdepth: 1
 
-   whatdo
-   setup
    gather
    process
-
+   setup
 
 
 Indices and tables

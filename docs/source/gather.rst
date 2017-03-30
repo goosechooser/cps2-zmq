@@ -1,5 +1,5 @@
 The gather Package
-========
+==================
 
 :mod:`gather` is responsible for setting up a connection between a MAME instance (acting as a server)
 and a client (:mod:`MameClient` in this implementation). This is handled by the ZeroMQ library using the PyZMQ bindings.
