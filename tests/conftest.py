@@ -4,16 +4,16 @@ import pytest
 import jsonpickle
 
 def get_file(fpath):
-    return open(fpath, 'r+b')
+    return open(os.path.normpath(fpath), 'r+b')
 
 def get_frame(framefile):
-    with open(framefile, 'r') as f:
+    with open(os.path.normpath(framefile), 'r') as f:
         data = f.read()
     return jsonpickle.decode(data)
 
 @pytest.fixture(scope='module')
 def testframe():
-    return get_frame('frame_data\\frame_1526.json')
+    return get_frame('tests/test_data/frame_1499.json')
 
 @pytest.fixture(scope='module')
 def testframes():
@@ -21,11 +21,11 @@ def testframes():
 
 @pytest.fixture(scope='module')
 def gfxfile():
-    return get_file('data\\vm3_combined')
+    return get_file('data/vm3_combined')
 
 @pytest.fixture(scope='module')
 def gfxmap():
-    gfx = get_file('data\\vm3_combined')
+    gfx = get_file('data/vm3_combined')
     return mmap.mmap(gfx.fileno(), 0)
 
 
