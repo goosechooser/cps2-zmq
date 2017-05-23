@@ -59,12 +59,7 @@ class MameWorker(Thread):
                 message = self._puller.recv()
                 message = msgpack.unpackb(message, encoding='utf-8')
 
-                frame_number = message['frame_number']
-
-                if frame_number == 'closing' or frame_number < 1140:
-                    result = frame_number
-                else:
-                    result = self._work(message)
+                result = _process_message(message)
 
                 self._pusher.send_pyobj(result)
 
@@ -84,9 +79,22 @@ class MameWorker(Thread):
 
         self._cleanup()
 
+
     def _cleanup(self):
         self._pusher.close()
         self._control.close()
+
+def _process_message(message):
+    """
+    Checks the frame number and acts accordingly.
+    """
+    frame_number = message['frame_number']
+
+    if frame_number == 'closing' or frame_number < 1140:
+        result = frame_number
+    else:
+        result = _work(message)
+    return result
 
 def _work(message, logging=False):
     """
@@ -105,8 +113,6 @@ def _work(message, logging=False):
             if logging:
                 _log(message, sprites, palettes)
 
-            result = message, masked, palettes
-
         else:
             result = {}
     else:
@@ -118,7 +124,7 @@ def _log(message, sprites, palettes):
     frame = Frame.new(message['frame_number'], sprites, palettes)
     frame.to_file("frame_data\\")
 
-
+# sprites is a list actually
 def mask_all(sprites):
     """
     Calls sprite_mask on every value in the sprites dict.
