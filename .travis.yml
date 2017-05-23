@@ -10,8 +10,8 @@ python:
   # - "nightly" # currently points to 3.7-dev
 # command to install dependencies
 install: 
-  - pip install .
-  - pip install jsonpickle
-  - pip install Pillow
+  - pip install -r requirements.txt
+  # - pip install jsonpickle
+  # - pip install Pillow
 # command to run tests
 script: pytest
