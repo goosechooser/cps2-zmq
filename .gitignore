@@ -3,7 +3,7 @@ frame*/
 .vscode/
 scratch.py
 notes
-data/
+# data/
 cps_zmq/gather/scratch.py
 
 # Byte-compiled / optimized / DLL files
