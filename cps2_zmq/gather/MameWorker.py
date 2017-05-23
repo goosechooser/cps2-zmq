@@ -79,37 +79,45 @@ class MameWorker(Thread):
                 self._state = 'done'
                 self._pusher.send_pyobj("threaddead")
             else:
-                result = self._work(message)
+                result = _work(message)
                 self._pusher.send_pyobj(result)
 
         self._cleanup()
 
-    def _work(self, message):
-        """
-        A private method. Where the actual message processing is done.
-        """
-        result = message['frame_number']
-        if message['frame_number'] != 'closing':
-            if message['frame_number'] > 1140:
-                masked = mask_all(message['sprites'])
-                palettes = message['palettes']
-
-                # Consider just writing message + masked sprites to file?
-                # would decouple MameSink/MameClient from cps2_zmq.process
-                sprites = [Sprite.from_dict(m) for m in masked]
-
-                frame = Frame.new(message['frame_number'], sprites, palettes)
-                frame.to_file("frame_data\\")
-            else:
-                result = {}
-        else:
-            pass
-
-        return result
-
     def _cleanup(self):
         self._pusher.close()
         self._control.close()
+
+def _work(message, logging=False):
+    """
+    A private method. Where the actual message processing is done.
+    """
+    result = message['frame_number']
+    if message['frame_number'] != 'closing':
+        if message['frame_number'] > 1140:
+            masked = mask_all(message['sprites'])
+            palettes = message['palettes']
+
+            # Consider just writing message + masked sprites to file?
+            # would decouple MameSink/MameClient from cps2_zmq.process
+            sprites = [Sprite.from_dict(m) for m in masked]
+
+            if logging:
+                _log(message, sprites, palettes)
+
+            result = message, masked, palettes
+
+        else:
+            result = {}
+    else:
+        pass
+
+    return result
+
+def _log(message, sprites, palettes):
+    frame = Frame.new(message['frame_number'], sprites, palettes)
+    frame.to_file("frame_data\\")
+
 
 def mask_all(sprites):
     """
