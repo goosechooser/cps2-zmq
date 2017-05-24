@@ -1,5 +1,3 @@
-
-import zmq
 import pytest
 from cps2_zmq.gather import MameWorker
 
@@ -52,7 +50,7 @@ def test_work(message, expected):
 
 @pytest.mark.parametrize("messages, expected", [
     ([{'frame_number': 1141, 'sprites': [[420, 69, 300, 1], [1, 1, 1, 1]], 'palettes': [[]]},
-    {'frame_number': 0, 'sprites': [], 'palettes': []}], 1)
+      {'frame_number': 0, 'sprites': [], 'palettes': []}], 1)
 ])
 @pytest.mark.timeout(timeout=10, method='thread')
 def test_run(client, sink, messages, expected):
@@ -62,7 +60,5 @@ def test_run(client, sink, messages, expected):
     client.push_messages(messages)
 
     results = sink.run(expected)
-    print(results)
     assert len(results) == expected
     client.close()
-    # assert False

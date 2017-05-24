@@ -18,14 +18,10 @@ class MockClient():
     def pusher(self):
         return self._pusher
 
-    # def _wrap_messages(self, messages):
-    #     return [{'frame_number': msg[0], 'sprites': [msg[1]], 'palettes': [msg[2]]} for msg in messages]
-
     def close(self):
         self._pusher.close()
 
     def push_messages(self, messages):
-        # wrapped = self._wrap_messages(messages)
         messages.append({'frame_number': 'closing', 'sprites': [], 'palettes': []})
         for msg in messages:
             packed = msgpack.packb(msg)
