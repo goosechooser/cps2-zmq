@@ -84,7 +84,7 @@ class MameWorker(Thread):
         self._pusher.close()
         self._control.close()
 
-def _process_message(message):
+def _work(message):
     """
     Checks the frame number and acts accordingly.
     """
@@ -93,35 +93,31 @@ def _process_message(message):
     if frame_number == 'closing' or frame_number < 1140:
         result = frame_number
     else:
-        result = _work(message)
+        result = _process_message(message)
+
     return result
 
-def _work(message, logging=False):
+def _process_message(message, logging=False):
     """
     A private method. Where the actual message processing is done.
     """
-    result = message['frame_number']
-    if message['frame_number'] != 'closing':
-        if message['frame_number'] > 1140:
-            masked = mask_all(message['sprites'])
-            palettes = message['palettes']
+    masked = mask_all(message['sprites'])
+    palettes = message['palettes']
 
-            # Consider just writing message + masked sprites to file?
-            # would decouple MameSink/MameClient from cps2_zmq.process
-            sprites = [Sprite.from_dict(m) for m in masked]
+    # Consider just writing message + masked sprites to file?
+    # would decouple MameSink/MameClient from cps2_zmq.process
+    # or write a new class that does that HMM??
+    sprites = [Sprite.from_dict(m) for m in masked]
 
-            if logging:
-                _log(message, sprites, palettes)
+    if logging:
+        _log(message['frame_number'], sprites, palettes)
 
-        else:
-            result = {}
-    else:
-        pass
+    result = [message['frame_number'], sprites, palettes]
 
     return result
 
-def _log(message, sprites, palettes):
-    frame = Frame.new(message['frame_number'], sprites, palettes)
+def _log(frame_number, sprites, palettes):
+    frame = Frame.new(frame_number, sprites, palettes)
     frame.to_file("frame_data\\")
 
 # sprites is a list actually
@@ -130,9 +126,7 @@ def mask_all(sprites):
     Calls sprite_mask on every value in the sprites dict.
 
     Args:
-        sprites (dict): This is a dict because\
-        I can't figure out how to have the server send sprite data as a list.\
-        Need to recheck this later.
+        sprites (:obj:`list` of :obj:`list`): the raw sprite data
 
     Returns:
         a list.

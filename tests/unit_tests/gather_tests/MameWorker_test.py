@@ -1,3 +1,5 @@
+
+import zmq
 import pytest
 from cps2_zmq.gather import MameWorker
 
@@ -30,20 +32,37 @@ def test_mask_all():
         assert r == expected[i]
 
 @pytest.mark.parametrize("message, expected",[
-    (0, 0),
-    (1141, 1141),
-    ('closing', 'closing'),
+    ({'frame_number': 1141, 'sprites': [[420, 69, 300, 1], [1, 1, 1, 1]], 'palettes': [[]]}, 1141),
 ])
 def test_process_message(message, expected):
-    test_message = {'frame_number': message, 'sprites': [], 'palettes': []}
-    result = MameWorker._process_message(test_message)
-    assert result == expected
+    # test_message = {'frame_number': message, 'sprites': [], 'palettes': []}
+    result = MameWorker._process_message(message)
+    print(result)
+    assert result[0] == expected
 
-@pytest.mark.parametrize("message, expected",[
-    ({'frame_number': 0, 'sprites': [], 'palettes': []}, {}),
-    ({'frame_number': 1141, 'sprites': [[420, 69, 300, 1]], 'palettes': [[]]}, 1141),
+@pytest.mark.parametrize("message, expected", [
+    ({'frame_number': 0, 'sprites': [], 'palettes': []}, 0),
+    # ({'frame_number': 1141, 'sprites': [[420, 69, 300, 1]], 'palettes': [[]]}, 1141),
     ({'frame_number': 'closing', 'sprites': [], 'palettes': []}, 'closing'),
 ])
 def test_work(message, expected):
     result = MameWorker._work(message)
+    print(result)
     assert result == expected
+
+@pytest.mark.parametrize("messages, expected", [
+    ([{'frame_number': 1141, 'sprites': [[420, 69, 300, 1], [1, 1, 1, 1]], 'palettes': [[]]},
+    {'frame_number': 0, 'sprites': [], 'palettes': []}], 1)
+])
+@pytest.mark.timeout(timeout=10, method='thread')
+def test_run(client, sink, messages, expected):
+    worker = MameWorker.MameWorker("inproc://toworkers")
+    worker.daemon = True
+    worker.start()
+    client.push_messages(messages)
+
+    results = sink.run(expected)
+    print(results)
+    assert len(results) == expected
+    client.close()
+    # assert False
