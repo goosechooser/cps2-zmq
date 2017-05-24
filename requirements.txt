@@ -2,4 +2,4 @@
 jsonpickle
 Pillow
 zmq
-msgpack
+msgpack-python
