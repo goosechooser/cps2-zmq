@@ -16,7 +16,7 @@ install:
 # command to run tests
 script: 
   - pytest
-  - travis-sphinx build
+  - travis-sphinx --branches=travis-ci build
 
 after_success: 
   - travis-sphinx deploy
