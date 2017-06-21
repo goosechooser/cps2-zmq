@@ -12,13 +12,13 @@ Examples
 --------
 
 A few sprites acquired by using :py:mod:`~cps2_zmq.gather` and then printed with :py:meth:`~cps2_zmq.process.Sprite.Sprite.to_png`: 
-    .. image:: ../../../cps2-zmq-docs/images/sprite_ex_1.png
+    .. image:: _images/sprite_ex_1.png
         :width: 32 px
         :height: 48 px
-    .. image:: ../../../cps2-zmq-docs/images/sprite_ex_2.png
+    .. image:: _images/sprite_ex_2.png
         :width: 112 px
         :height: 48 px
-    .. image:: ../../../cps2-zmq-docs/images/sprite_ex_3.png
+    .. image:: _images/sprite_ex_3.png
         :width: 96 px
         :height: 16 px
 

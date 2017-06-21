@@ -13,7 +13,7 @@ Example
 
 A Frame acquired by using :py:mod:`~cps2_zmq.gather` and then printed with :py:meth:`~cps2_zmq.process.Frame.Frame.to_png`: 
 
-    .. image:: ../../../cps2-zmq-docs/images/Frame_ex.png
+    .. image:: _images/Frame_ex.png
         :width: 400 px
         :height: 400 px
 
