@@ -314,6 +314,19 @@ def new(addr, data, dimensions=16):
         tile.data = tile.unpack()
     return tile
 
+def from_dict(dict_):
+    """
+    A factory function.
+
+    Args:
+        dict_ (dict): dict containing the following keys: 'address', 'data', and 'dimensions'
+
+    Returns:
+        a Tile
+    """
+
+    return Tile(dict_['address'], dict_['data'], dict_['dimensions'])
+
 def from_image(image, address):
     """
     A factory function.
