@@ -59,12 +59,7 @@ class MameWorker(Thread):
                 message = self._puller.recv()
                 message = msgpack.unpackb(message, encoding='utf-8')
 
-                frame_number = message['frame_number']
-
-                if frame_number == 'closing' or frame_number < 1140:
-                    result = frame_number
-                else:
-                    result = self._work(message)
+                result = _process_message(message)
 
                 self._pusher.send_pyobj(result)
 
@@ -79,46 +74,59 @@ class MameWorker(Thread):
                 self._state = 'done'
                 self._pusher.send_pyobj("threaddead")
             else:
-                result = self._work(message)
+                result = _work(message)
                 self._pusher.send_pyobj(result)
 
         self._cleanup()
 
-    def _work(self, message):
-        """
-        A private method. Where the actual message processing is done.
-        """
-        result = message['frame_number']
-        if message['frame_number'] != 'closing':
-            if message['frame_number'] > 1140:
-                masked = mask_all(message['sprites'])
-                palettes = message['palettes']
-
-                # Consider just writing message + masked sprites to file?
-                # would decouple MameSink/MameClient from cps2_zmq.process
-                sprites = [Sprite.from_dict(m) for m in masked]
-
-                frame = Frame.new(message['frame_number'], sprites, palettes)
-                frame.to_file("frame_data\\")
-            else:
-                result = {}
-        else:
-            pass
-
-        return result
 
     def _cleanup(self):
         self._pusher.close()
         self._control.close()
 
+def _work(message):
+    """
+    Checks the frame number and acts accordingly.
+    """
+    frame_number = message['frame_number']
+
+    if frame_number == 'closing' or frame_number < 1140:
+        result = frame_number
+    else:
+        result = _process_message(message)
+
+    return result
+
+def _process_message(message, logging=False):
+    """
+    A private method. Where the actual message processing is done.
+    """
+    masked = mask_all(message['sprites'])
+    palettes = message['palettes']
+
+    # Consider just writing message + masked sprites to file?
+    # would decouple MameSink/MameClient from cps2_zmq.process
+    # or write a new class that does that HMM??
+    sprites = [Sprite.from_dict(m) for m in masked]
+
+    if logging:
+        _log(message['frame_number'], sprites, palettes)
+
+    result = [message['frame_number'], sprites, palettes]
+
+    return result
+
+def _log(frame_number, sprites, palettes):
+    frame = Frame.new(frame_number, sprites, palettes)
+    frame.to_file("frame_data\\")
+
+# sprites is a list actually
 def mask_all(sprites):
     """
     Calls sprite_mask on every value in the sprites dict.
 
     Args:
-        sprites (dict): This is a dict because\
-        I can't figure out how to have the server send sprite data as a list.\
-        Need to recheck this later.
+        sprites (:obj:`list` of :obj:`list`): the raw sprite data
 
     Returns:
         a list.
