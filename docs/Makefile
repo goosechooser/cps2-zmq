@@ -5,7 +5,7 @@
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
-BUILDDIR      = ../../cps2-zmq-docs
+BUILDDIR      = build
 PDFBUILDDIR   = /tmp
 PDF 		  = ../manual.pdf
 
