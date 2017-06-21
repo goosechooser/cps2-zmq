@@ -42,7 +42,7 @@ class MockSink():
     def run(self, num_messages):
         msgs_recv = 0
         messages = []
-        working = True
+
         while msgs_recv != num_messages:
             message = self._puller.recv_pyobj()
             if message == 'closing':
@@ -54,6 +54,33 @@ class MockSink():
         self._control.close()
         return messages
 
+class MockServer():
+    def __init__(self, port, context=None):
+        self._context = context or zmq.Context.instance()
+        self._subscriber = self._context.socket(zmq.SUB)
+        self._subscriber.connect(':'.join(["tcp://localhost", str(port)]))
+        self._subscriber.setsockopt_string(zmq.SUBSCRIBE, '')
+        
+    def run(self):
+        print("starting server")
+
+        message = 'ok'
+        # while message != "closing":
+        for i in range(10):
+            message = self._subscriber.recv()
+            # print('message', message)
+            # print('message type', type(message))
+
+            message = msgpack.unpackb(message, encoding='utf-8')
+            print('frame number', message['frame_number'])
+            # print('palettes', message['palettes'])
+            print('sprites', message['sprites'])
+            print('type o sprites', type(message['sprites']))
+
+            message = message['frame_number']
+            # print(message)
+        print('donezo')
+
 @pytest.fixture(scope="module")
 def client():
     return MockClient("inproc://toworkers")
@@ -61,3 +88,7 @@ def client():
 @pytest.fixture(scope="module")
 def sink():
     return MockSink("inproc://fromworkers")
+
+@pytest.fixture(scope="module")
+def server():
+    return MockServer(5556)
