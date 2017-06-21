@@ -2,17 +2,25 @@ language: python
 python:
   # - "3.3"
   # - "3.4"
-  # - "3.5"
+  - "3.5"
   # - "3.5-dev" # 3.5 development branch
   - "3.6"
   # - "3.6-dev" # 3.6 development branch
   # - "3.7-dev" # 3.7 development branch
   # - "nightly" # currently points to 3.7-dev
+  
 # command to install dependencies
 install: 
   - pip install .
   - pip install jsonpickle
   - pip install Pillow
+  - pip install sphinx
+  - pip install --user travis-sphinx
+
 # command to run tests
-script: pytest
-after_success: make /docs/Makefile
+script: 
+  - pytest
+  - travis-sphinx build
+
+after_success: 
+  - travis-sphinx deploy
