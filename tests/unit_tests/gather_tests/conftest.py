@@ -37,22 +37,46 @@ class MockSink():
         self._puller.setsockopt(zmq.LINGER, 0)
 
         self._control = self._context.socket(zmq.PUB)
-        self._control.bind("inproc://control")
+        self._control.bind("inproc://mockcontrol")
 
     def run(self, num_messages):
         msgs_recv = 0
         messages = []
 
         while msgs_recv != num_messages:
-            message = self._puller.recv_pyobj()
-            if message == 'closing':
+            recv = self._puller.recv_pyobj()
+            if recv['message'] == 'closing':
                 self._control.send_string('KILL')
             else:
-                messages.append(message)
+                messages.append(recv['message'])
                 msgs_recv += 1
 
-        self._control.close()
         return messages
+
+    def close(self):
+        self._control.close()
+        self._puller.close()
+
+class MockWorker():
+    def __init__(self, wid=None, pullfrom=None, context=None):
+        self._context = context or zmq.Context.instance()
+        self._wid = wid
+        self._pusher = self._context.socket(zmq.PUSH)
+        self._pusher.connect("inproc://frommockworkers")
+
+    @property
+    def wid(self):
+        return self._wid
+
+    @wid.setter
+    def wid(self, value):
+        self._wid = value
+
+    def run(self):
+        pass
+
+    def close(self):
+        self._pusher.close()
 
 class MockServer():
     def __init__(self, port, context=None):
@@ -60,7 +84,7 @@ class MockServer():
         self._subscriber = self._context.socket(zmq.SUB)
         self._subscriber.connect(':'.join(["tcp://localhost", str(port)]))
         self._subscriber.setsockopt_string(zmq.SUBSCRIBE, '')
-        
+
     def run(self):
         print("starting server")
 
@@ -81,6 +105,9 @@ class MockServer():
             # print(message)
         print('donezo')
 
+    def close(self):
+        self._subscriber.close()
+
 @pytest.fixture(scope="module")
 def client():
     client = MockClient("inproc://toworkers")
@@ -90,8 +117,25 @@ def client():
 
 @pytest.fixture(scope="module")
 def sink():
-    return MockSink("inproc://fromworkers")
+    sink = MockSink("inproc://mockworkers")
+    yield sink
+    sink.close()
+
+@pytest.fixture(scope="module")
+def worker():
+    worker = MockWorker()
+    yield worker
+    worker.close()
+
+@pytest.fixture(scope="module")
+def workers():
+    workers = [MockWorker(wid=num) for num in range(1, 3)]
+    yield workers
+    for w in workers:
+        w.close()
 
 @pytest.fixture(scope="module")
 def server():
-    return MockServer(5556)
+    server = MockServer(5556)
+    yield server
+    server.close()
