@@ -1,6 +1,6 @@
 # pylint: disable=E1101
 
-import time
+from threading import Thread
 import pytest
 import zmq
 import msgpack
@@ -58,11 +58,12 @@ class MockSink():
         self._puller.close()
 
 class MockWorker():
-    def __init__(self, wid=None, pullfrom=None, context=None):
+    def __init__(self, wid=None, pushto=None, context=None):
         self._context = context or zmq.Context.instance()
         self._wid = wid
         self._pusher = self._context.socket(zmq.PUSH)
-        self._pusher.connect("inproc://frommockworkers")
+        self._pusher.connect(pushto)
+        self._messages = []
 
     @property
     def wid(self):
@@ -72,8 +73,58 @@ class MockWorker():
     def wid(self, value):
         self._wid = value
 
-    def run(self):
+    @property
+    def messages(self):
+        return self._messages
+
+    @messages.setter
+    def messages(self, value):
+        self._messages = value
+
+    def setup(self):
         pass
+        
+    def start(self):
+        for message in self._messages:
+            self._pusher.send_pyobj(message)
+
+    def close(self):
+        self._pusher.close()
+
+class MockThreadWorker(Thread):
+    def __init__(self, wid=None, context=None):
+        super(MockThreadWorker, self).__init__()
+        self._context = context or zmq.Context.instance()
+        self._wid = wid
+        self._pusher = self._context.socket(zmq.PUSH)
+        self._pusher.setsockopt(zmq.LINGER, 0)
+        self._messages = []
+
+    @property
+    def wid(self):
+        return self._wid
+
+    @wid.setter
+    def wid(self, value):
+        self._wid = value
+
+    @property
+    def messages(self):
+        return self._messages
+
+    @messages.setter
+    def messages(self, value):
+        self._messages = value
+
+    def connect_push(self, pushto):
+        self._pusher.connect(pushto)
+
+    def setup(self):
+        self.daemon = True
+
+    def run(self):
+        for message in self._messages:
+            self._pusher.send_pyobj(message)
 
     def close(self):
         self._pusher.close()
@@ -114,7 +165,6 @@ def client():
     yield client
     client.close()
 
-
 @pytest.fixture(scope="module")
 def sink():
     sink = MockSink("inproc://mockworkers")
@@ -123,15 +173,24 @@ def sink():
 
 @pytest.fixture(scope="module")
 def worker():
-    worker = MockWorker()
+    worker = MockWorker(wid=1, pushto="inproc://frommockworkers")
     yield worker
     worker.close()
 
 @pytest.fixture(scope="module")
 def workers():
-    workers = [MockWorker(wid=num) for num in range(1, 3)]
+    workers = [MockWorker(wid=1, pushto="inproc://frommockworkers")]
     yield workers
     for w in workers:
+        print('worker', w.wid, 'cleanup')
+        w.close()
+
+@pytest.fixture(scope="module")
+def tworkers():
+    workers = [MockThreadWorker(wid=1)]
+    yield workers
+    for w in workers:
+        print('worker', w.wid, 'cleanup')
         w.close()
 
 @pytest.fixture(scope="module")
