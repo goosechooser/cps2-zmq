@@ -185,12 +185,12 @@ def workers():
         print('worker', w.wid, 'cleanup')
         w.close()
 
-@pytest.fixture(scope="module")
-def tworkers():
-    workers = [MockThreadWorker(wid=1)]
+@pytest.fixture(scope="module",
+                params=[1, 2])
+def tworkers(request):
+    workers = [MockThreadWorker(wid=i) for i in range(request.param)]
     yield workers
     for w in workers:
-        print('worker', w.wid, 'cleanup')
         w.close()
 
 @pytest.fixture(scope="module")
