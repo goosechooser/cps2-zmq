@@ -51,6 +51,9 @@ class MameWorker(Thread):
     def wid(self):
         return self._wid
     
+    def setup(self):
+        self.daemon = True
+        
     def run(self):
         """
         MameWorker is a subclass of Thread, run is called when the thread started.\
