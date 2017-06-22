@@ -25,9 +25,9 @@ class MameWorker(Thread):
         state (str): What the worker is currently doing.\
         Values for this are 'working', 'cleanup', 'closing', and 'done'.
     """
-    def __init__(self, pullfrom, context=None):
+    def __init__(self, pullfrom, pushto, controlfrom, context=None):
         super(MameWorker, self).__init__()
-        self._id = random.randrange(1, 666)
+        self._wid = random.randrange(1, 666)
         self._context = context or zmq.Context.instance()
 
         self._puller = self._context.socket(zmq.PULL)
@@ -35,10 +35,10 @@ class MameWorker(Thread):
         self._puller.setsockopt(zmq.LINGER, 0)
 
         self._pusher = self._context.socket(zmq.PUSH)
-        self._pusher.connect("inproc://fromworkers")
+        self._pusher.connect(pushto)
 
         self._control = self._context.socket(zmq.SUB)
-        self._control.connect("inproc://control")
+        self._control.connect(controlfrom)
         self._control.setsockopt_string(zmq.SUBSCRIBE, '')
 
         self._poller = zmq.Poller()
@@ -47,6 +47,10 @@ class MameWorker(Thread):
 
         self._state = 'working'
 
+    @property
+    def wid(self):
+        return self._wid
+    
     def run(self):
         """
         MameWorker is a subclass of Thread, run is called when the thread started.\
@@ -60,8 +64,9 @@ class MameWorker(Thread):
                 message = msgpack.unpackb(message, encoding='utf-8')
 
                 result = _process_message(message)
+                json = {'wid' : self._wid, 'message' : result}
 
-                self._pusher.send_pyobj(result)
+                self._pusher.send_pyobj(json)
 
             if polled.get(self._control) == zmq.POLLIN:
                 self._state = 'cleanup'
@@ -72,10 +77,14 @@ class MameWorker(Thread):
                 message = msgpack.unpackb(message, encoding='utf-8')
             except zmq.Again:
                 self._state = 'done'
-                self._pusher.send_pyobj("threaddead")
+                result = 'threaddead'
+                json = {'wid' : self._wid, 'message' : result}
+
+                self._pusher.send_pyobj(json)
             else:
                 result = _work(message)
-                self._pusher.send_pyobj(result)
+                json = {'wid' : self._wid, 'message' : result}
+                self._pusher.send_pyobj(json)
 
         self._cleanup()
 
