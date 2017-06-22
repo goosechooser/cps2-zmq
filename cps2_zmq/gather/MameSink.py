@@ -18,18 +18,18 @@ class MameSink(Thread):
         workers (:obj:`list`): A list containing the MameWorkers.
         msgsrecv (int): The number of messages received. Used in debugging/logging.
     """
-    def __init__(self, context=None):
+    def __init__(self, pullfrom, context=None):
         super(MameSink, self).__init__()
         self._context = context or zmq.Context.instance()
         self._puller = self._context.socket(zmq.PULL)
-        self._puller.bind("inproc://fromworkers")
+        self._puller.bind(pullfrom)
         self._puller.setsockopt(zmq.LINGER, 0)
 
         self._workerpub = self._context.socket(zmq.PUB)
         self._workerpub.bind("inproc://control")
 
         self._nworkers = 0
-        self._workers = []
+        self._workers = {}
         self.daemon = True
         self._msgsrecv = 0
 
@@ -37,6 +37,7 @@ class MameSink(Thread):
         self._puller.close()
         self._workerpub.close()
 
+    # Replace worker, nworkers with just a list of workers
     def setup_workers(self, worker, nworkers, pullfrom):
         """
         Sets up all the MameWorker threads
@@ -50,6 +51,10 @@ class MameSink(Thread):
         self._nworkers = nworkers
         self._workers = [worker(pullfrom) for _ in range(self._nworkers)]
 
+    # Does this need to be a method here? 
+    def setup_workers2(self, workers):
+        self._workers = {worker.wid : worker for worker in workers}
+
     def run(self):
         """
         MameSink is a subclass of Thread, run is called when the thread started.
@@ -59,21 +64,30 @@ class MameSink(Thread):
             worker.daemon = True
             worker.start()
 
-        workers_dead = 0
-        while workers_dead != self._nworkers:
+        while self._workers:
             message = self._puller.recv_pyobj()
 
-            if message == 'closing':
-                print('worksink closing')
-                self._workerpub.send_string('KILL')
-            elif message == 'threaddead':
-                workers_dead += 1
-            else:
-                self._msgsrecv += 1
+            self._process_message(message)
 
         print('worksink closed')
         self._cleanup()
         print("Received", self._msgsrecv, "messages. Ending.")
+
+    def _process_message(self, message):
+        if message['message'] == 'closing':
+            print('worksink closing')
+            self._workerpub.send_string('KILL')
+            result = 'worksink closing'
+
+        elif message['message'] == 'threaddead':
+            result = ' '.join([str(message['wid']), 'is dead'])
+            del self._workers[message['wid']]
+
+        else:
+            self._msgsrecv += 1
+            # result = self._msgsrecv
+            result = 'another message'
+        return result
 
 
 
