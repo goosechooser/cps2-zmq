@@ -83,7 +83,10 @@ class MockServer():
 
 @pytest.fixture(scope="module")
 def client():
-    return MockClient("inproc://toworkers")
+    client = MockClient("inproc://toworkers")
+    yield client
+    client.close()
+
 
 @pytest.fixture(scope="module")
 def sink():

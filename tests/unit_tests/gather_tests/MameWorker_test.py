@@ -61,4 +61,4 @@ def test_run(client, sink, messages, expected):
 
     results = sink.run(expected)
     assert len(results) == expected
-    client.close()
+    # client.close()
