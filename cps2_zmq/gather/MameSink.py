@@ -33,7 +33,11 @@ class MameSink(Thread):
         self.daemon = True
         self._msgsrecv = 0
 
-    def _cleanup(self):
+    @property
+    def workers(self):
+        return self._workers
+
+    def cleanup(self):
         self._puller.close()
         self._workerpub.close()
 
@@ -59,21 +63,24 @@ class MameSink(Thread):
         """
         MameSink is a subclass of Thread, run is called when the thread started.
         """
-        print("work sink starting threads")
-        for worker in self._workers:
-            worker.daemon = True
+        for worker in self._workers.values():
+            worker.setup()
             worker.start()
-
+        
         while self._workers:
-            message = self._puller.recv_pyobj()
+            try:
+                message = self._puller.recv_pyobj()
+            except zmq.ZMQError as err:
+                print('error caught', err)
+            else:
+                result = self._process_message(message)
 
-            self._process_message(message)
-
-        print('worksink closed')
-        self._cleanup()
-        print("Received", self._msgsrecv, "messages. Ending.")
+        self.cleanup()
 
     def _process_message(self, message):
+        result = 'another message'
+        self._msgsrecv += 1
+        
         if message['message'] == 'closing':
             print('worksink closing')
             self._workerpub.send_string('KILL')
@@ -83,10 +90,6 @@ class MameSink(Thread):
             result = ' '.join([str(message['wid']), 'is dead'])
             del self._workers[message['wid']]
 
-        else:
-            self._msgsrecv += 1
-            # result = self._msgsrecv
-            result = 'another message'
         return result
 
 
