@@ -36,19 +36,15 @@ class MameClient():
         self._worksink = None
         self._working = True
 
-    def setup_worksink(self, sink, worker, nworkers):
-        """
-        Set up the Sink.
+    @property
+    def worksink(self):
+        return self._worksink
 
-        Args:
-            sink (:obj:`Thread`): The sink that will collect all processed messages.
-            worker (:obj:`Thread`): Worker to use for processing messages.
-            nworkers (int): number of workers to create.
-        """
-        print('set up work sink')
-        self._workpusher.bind(self._toworkers)
-        self._worksink = sink
-        self._worksink.setup_workers(worker, nworkers, self._toworkers)
+    @worksink.setter
+    def worksink(self, o):
+        if not isinstance(o, MameSink):
+            raise TypeError("worksink must be a MameSink")
+        self._worksink = o
 
     def start(self):
         """
