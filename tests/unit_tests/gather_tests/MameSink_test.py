@@ -14,20 +14,18 @@ def sink():
 ])
 def test_process_message(message, expected, sink, worker):
     worker.wid = message['wid']
-    sink.setup_workers2([worker])
+    sink.workers = [worker]
 
     result = sink._process_message(message)
     assert result == expected
 
 def test_run(sink, tworkers):
-    # sink = MameSink.MameSink("inproc://frommockworkers")
-
     messages = ['some result', 'closing', 'threaddead']
     for worker in tworkers:
         worker.messages = [{'wid' : worker.wid, 'message': msg} for msg in messages]
         worker.connect_push("inproc://frommockworkers")
 
-    sink.setup_workers2(tworkers)
+    sink.workers = tworkers
 
     sink.start()
     #block and let the sink run
