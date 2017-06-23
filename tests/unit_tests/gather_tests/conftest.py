@@ -1,5 +1,6 @@
 # pylint: disable=E1101
 
+import time
 from threading import Thread
 import pytest
 import zmq
@@ -131,35 +132,38 @@ class MockThreadWorker(Thread):
     def close(self):
         self._pusher.close()
 
-class MockServer():
+class MockServer(Thread):
     def __init__(self, port, context=None):
+        super(MockServer, self).__init__()
         self._context = context or zmq.Context.instance()
-        self._subscriber = self._context.socket(zmq.SUB)
-        self._subscriber.connect(':'.join(["tcp://localhost", str(port)]))
-        self._subscriber.setsockopt_string(zmq.SUBSCRIBE, '')
+        self._publisher = self._context.socket(zmq.PUB)
+        self._publisher.bind(':'.join(["tcp://127.0.0.1", str(port)]))
+        self._msg_limit = 10
+
+    @property
+    def msg_limit(self):
+        return self._msg_limit
+
+    @msg_limit.setter
+    def msg_limit(self, value):
+        self._msg_limit = value
 
     def run(self):
-        print("starting server")
+        i = 0
+        # time.sleep(10)
+        while i < self._msg_limit:
+            print('sending')
+            msg = msgpack.packb({'frame_number' : i}, encoding='utf-8')
+            self._publisher.send(msg)
+            i += 1
+            # time.sleep(2)
 
-        message = 'ok'
-        # while message != "closing":
-        for i in range(10):
-            message = self._subscriber.recv()
-            # print('message', message)
-            # print('message type', type(message))
-
-            message = msgpack.unpackb(message, encoding='utf-8')
-            print('frame number', message['frame_number'])
-            # print('palettes', message['palettes'])
-            print('sprites', message['sprites'])
-            print('type o sprites', type(message['sprites']))
-
-            message = message['frame_number']
-            # print(message)
-        print('donezo')
+        msg = msgpack.packb({'frame_number' : 'closing'}, encoding='utf-8')
+        self._publisher.send(msg)
+        print('done')
 
     def close(self):
-        self._subscriber.close()
+        self._publisher.close()
 
 @pytest.fixture(scope="module")
 def client():
@@ -197,6 +201,6 @@ def tworkers(request):
 
 @pytest.fixture(scope="module")
 def server():
-    server = MockServer(5556)
+    server = MockServer(5666)
     yield server
     server.close()
