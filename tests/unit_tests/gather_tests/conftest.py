@@ -5,6 +5,8 @@ import pytest
 import zmq
 import msgpack
 
+from cps2_zmq.gather.MameSink import MameSink
+
 
 class MockClient():
     def __init__(self, pushto):
@@ -28,7 +30,7 @@ class MockClient():
             self._pusher.send(packed)
 
 
-class MockSink():
+class MockSink(MameSink):
     def __init__(self, pullfrom):
         self._context = zmq.Context.instance()
 
@@ -83,7 +85,7 @@ class MockWorker():
 
     def setup(self):
         pass
-        
+
     def start(self):
         for message in self._messages:
             self._pusher.send_pyobj(message)
