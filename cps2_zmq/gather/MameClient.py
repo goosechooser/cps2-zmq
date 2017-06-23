@@ -36,6 +36,7 @@ class MameClient():
         
         self._worksink = None
         self._working = True
+        self.msgs_recv = 0
 
     @property
     def worksink(self):
@@ -47,6 +48,10 @@ class MameClient():
             raise TypeError("worksink must be a MameSink")
         self._worksink = o
 
+    def cleanup(self):
+        self._serversub.close()
+        self._workpusher.close()
+
     def start(self):
         """
         Start. Everything.
@@ -54,24 +59,29 @@ class MameClient():
         print('starting')
         self._worksink.start()
 
-        msgs_recv = 0
         while self._working:
             #receive from server/MAME
             message = self._serversub.recv()
             message = msgpack.unpackb(message, encoding='utf-8')
-            msgs_recv += 1
-            if message['frame_number'] == 'closing':
-                self._working = False
-                self._serversub.close()
-
-            message = msgpack.packb(message)
+            
+            message = self.process_message(message)
             self._workpusher.send(message)
 
-        print(msgs_recv, "Client Received")
+        print(self.msgs_recv, "Client Received")
 
         self._worksink.join()
+        # self._workpusher.close()
         print('sink has joined')
         print('done')
+
+    def process_message(self, message):
+        self.msgs_recv += 1
+
+        if message['frame_number'] == 'closing':
+            self._working = False
+
+        message = msgpack.packb(message)
+        return message
 
 def main():
     num_workers = 8
