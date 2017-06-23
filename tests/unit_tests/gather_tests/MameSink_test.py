@@ -3,7 +3,7 @@ from cps2_zmq.gather import MameSink
 
 @pytest.fixture(scope="function")
 def sink():
-    sink = MameSink.MameSink("inproc://frommockworkers")
+    sink = MameSink.MameSink("inproc://frommockworkers", "inproc://ok")
     yield sink
     sink.cleanup()
 

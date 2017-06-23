@@ -18,7 +18,7 @@ class MameSink(Thread):
         workers (:obj:`list`): A list containing the MameWorkers.
         msgsrecv (int): The number of messages received. Used in debugging/logging.
     """
-    def __init__(self, pullfrom, context=None):
+    def __init__(self, pullfrom, workercontrol, context=None):
         super(MameSink, self).__init__()
         self._context = context or zmq.Context.instance()
         self._puller = self._context.socket(zmq.PULL)
@@ -26,7 +26,7 @@ class MameSink(Thread):
         self._puller.setsockopt(zmq.LINGER, 0)
 
         self._workerpub = self._context.socket(zmq.PUB)
-        self._workerpub.bind("inproc://control")
+        self._workerpub.bind(workercontrol)
 
         self._nworkers = 0
         self._workers = {}

@@ -22,7 +22,7 @@ class MameClient():
         worksink (:obj:`Thread`): a sink for processed messages.
         working (bool): Used in the main loop.
     """
-    def __init__(self, port, context=None):
+    def __init__(self, port, toworkers, context=None):
         self._context = context or zmq.Context.instance()
         self._addr = "tcp://localhost"
         self._startport = port
@@ -31,8 +31,9 @@ class MameClient():
         self._serversub.connect(':'.join([self._addr, str(self._startport)]))
         self._serversub.setsockopt_string(zmq.SUBSCRIBE, '')
 
-        self._toworkers = "inproc://toworkers"
         self._workpusher = self._context.socket(zmq.PUSH)
+        self._workpusher.bind(toworkers)
+        
         self._worksink = None
         self._working = True
 
@@ -75,8 +76,12 @@ class MameClient():
 def main():
     num_workers = 8
 
-    client = MameClient(5556)
-    client.setup_worksink(MameSink(), MameWorker, num_workers)
+    client = MameClient(5556, "inproc://toworkers")
+    workers = [MameWorker("inproc://toworkers", "inproc://fromworkers", "inproc://control")
+               for i in range(num_workers)]
+    sink = MameSink("inproc://fromworkers", "inproc://control")
+    sink.workers = workers
+    client.setup_worksink(sink)
     client.start()
 
 if __name__ == '__main__':

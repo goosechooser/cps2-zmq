@@ -25,9 +25,9 @@ class MameWorker(Thread):
         state (str): What the worker is currently doing.\
         Values for this are 'working', 'cleanup', 'closing', and 'done'.
     """
-    def __init__(self, pullfrom, pushto, controlfrom, context=None):
+    def __init__(self, pullfrom, pushto, controlfrom, wid=None, context=None):
         super(MameWorker, self).__init__()
-        self._wid = random.randrange(1, 666)
+        self._wid = wid or random.randrange(1, 666)
         self._context = context or zmq.Context.instance()
 
         self._puller = self._context.socket(zmq.PULL)
@@ -50,10 +50,10 @@ class MameWorker(Thread):
     @property
     def wid(self):
         return self._wid
-    
+
     def setup(self):
         self.daemon = True
-        
+
     def run(self):
         """
         MameWorker is a subclass of Thread, run is called when the thread started.\
