@@ -42,6 +42,10 @@ class MameSink(Thread):
         self._workers = value
 
     def cleanup(self):
+        """
+        Closes all zmq sockets
+
+        """
         self._puller.close()
         self._workerpub.close()
 
