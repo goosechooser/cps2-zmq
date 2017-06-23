@@ -31,7 +31,7 @@ class MockClient():
 
 
 class MockSink(MameSink):
-    def __init__(self, pullfrom):
+    def __init__(self, pullfrom, workercontrol="inproc://mockcontrol"):
         self._context = zmq.Context.instance()
 
         self._puller = self._context.socket(zmq.PULL)
@@ -39,7 +39,7 @@ class MockSink(MameSink):
         self._puller.setsockopt(zmq.LINGER, 0)
 
         self._control = self._context.socket(zmq.PUB)
-        self._control.bind("inproc://mockcontrol")
+        self._control.bind(workercontrol)
 
     def run(self, num_messages):
         msgs_recv = 0
