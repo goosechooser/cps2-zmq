@@ -3,13 +3,11 @@
 import zmq
 import msgpack
 from cps2_zmq.gather.MameSink import MameSink
-from cps2_zmq.gather.MameWorker import MameWorker
 
-
-class MameClient():
+class MameClient(object):
     """
     Write some dope stuff here.
-    
+
     Attributes:
         context (:obj:`zmq.Context`): required by ZMQ to make the magic happen.
         addr (str): the address where messages are received at.
@@ -33,7 +31,7 @@ class MameClient():
 
         self._workpusher = self._context.socket(zmq.PUSH)
         self._workpusher.bind(toworkers)
-        
+
         self._worksink = None
         self._working = True
         self.msgs_recv = 0
@@ -82,17 +80,3 @@ class MameClient():
 
         message = msgpack.packb(message)
         return message
-
-def main():
-    num_workers = 8
-
-    client = MameClient(5556, "inproc://toworkers")
-    workers = [MameWorker("inproc://toworkers", "inproc://fromworkers", "inproc://control")
-               for i in range(num_workers)]
-    sink = MameSink("inproc://fromworkers", "inproc://control")
-    sink.workers = workers
-    client.setup_worksink(sink)
-    client.start()
-
-if __name__ == '__main__':
-    main()
