@@ -37,6 +37,10 @@ class MameSink(Thread):
     def workers(self):
         return self._workers
 
+    @workers.setter
+    def workers(self, value):
+        self._workers = value
+
     def cleanup(self):
         self._puller.close()
         self._workerpub.close()
