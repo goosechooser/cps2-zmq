@@ -15,7 +15,6 @@ class MameClient(object):
         serversub (:obj:`zmq.Context.socket`): A zmq socket set to SUB.\
         Any messages related to MameWorker status are sent out from here.
         toworkers (str): the address to push work out
-        workers (:obj:`list`): A list containing the MameWorkers.
         workpusher (:obj:`zmq.Context.socket`): A zmq socket set to PUSH.
         worksink (:obj:`Thread`): a sink for processed messages.
         working (bool): Used in the main loop.
@@ -47,6 +46,9 @@ class MameClient(object):
         self._worksink = o
 
     def cleanup(self):
+        """
+        Closes all associated zmq ports.
+        """
         self._serversub.close()
         self._workpusher.close()
 
@@ -61,7 +63,7 @@ class MameClient(object):
             #receive from server/MAME
             message = self._serversub.recv()
             message = msgpack.unpackb(message, encoding='utf-8')
-            
+
             message = self.process_message(message)
             self._workpusher.send(message)
 
