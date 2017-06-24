@@ -1,3 +1,6 @@
+"""
+Unit tests for MameWorker.py
+"""
 import pytest
 from cps2_zmq.gather import MameWorker
 
@@ -14,14 +17,14 @@ def test_sprite_mask():
 def test_mask_all():
     data = [[420, 69, 300, 1], [1, 1, 1, 1]]
     result1 = {'tile_number': '0x012c',
-                'priority': 0, 'xflip': 0, 'x': 420,
-                'y': 69, 'eol': 0, 'yflip': 0,
-                'height': 1, 'offset': 0, 'width': 1, 'pal_number': '1'}
+               'priority': 0, 'xflip': 0, 'x': 420,
+               'y': 69, 'eol': 0, 'yflip': 0,
+               'height': 1, 'offset': 0, 'width': 1, 'pal_number': '1'}
 
     result2 = {'tile_number': '0x01',
-                'priority': 0, 'xflip': 0, 'x': 1,
-                'y': 1, 'eol': 0, 'yflip': 0,
-                'height': 1, 'offset': 0, 'width': 1, 'pal_number': '1'}
+               'priority': 0, 'xflip': 0, 'x': 1,
+               'y': 1, 'eol': 0, 'yflip': 0,
+               'height': 1, 'offset': 0, 'width': 1, 'pal_number': '1'}
 
     expected = [result1, result2]
     results = MameWorker.mask_all(data)
@@ -29,7 +32,7 @@ def test_mask_all():
     for i, r in enumerate(results):
         assert r == expected[i]
 
-@pytest.mark.parametrize("message, expected",[
+@pytest.mark.parametrize("message, expected", [
     ({'frame_number': 1141, 'sprites': [[420, 69, 300, 1], [1, 1, 1, 1]], 'palettes': [[]]}, 1141),
 ])
 def test_process_message(message, expected):
@@ -57,6 +60,6 @@ def test_run(server, sink, messages, expected):
     worker.daemon = True
     worker.start()
     server.push_messages(messages)
-
-    results = sink.run(expected)
+    sink.msg_limit = expected
+    results = sink.run()
     assert len(results) == expected

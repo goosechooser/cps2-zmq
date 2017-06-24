@@ -1,6 +1,5 @@
 # pylint: disable=E1101
 
-import time
 from threading import Thread
 import pytest
 import zmq
@@ -35,19 +34,21 @@ class MockSink(MameSink):
     def __init__(self, pullfrom, workercontrol="inproc://mockcontrol"):
         super(MockSink, self).__init__(pullfrom, workercontrol)
         self._context = zmq.Context.instance()
+        self._msg_limit = 10
 
-        # self._puller = self._context.socket(zmq.PULL)
-        # self._puller.bind(pullfrom)
-        # self._puller.setsockopt(zmq.LINGER, 0)
+    @property
+    def msg_limit(self):
+        return self._msg_limit
 
-        # self._control = self._context.socket(zmq.PUB)
-        # self._control.bind(workercontrol)
+    @msg_limit.setter
+    def msg_limit(self, value):
+        self._msg_limit = value
 
-    def run(self, num_messages):
+    def run(self):
         msgs_recv = 0
         messages = []
 
-        while msgs_recv != num_messages:
+        while msgs_recv != self._msg_limit:
             recv = self._puller.recv_pyobj()
             if recv['message'] == 'closing':
                 self._workerpub.send_string('KILL')

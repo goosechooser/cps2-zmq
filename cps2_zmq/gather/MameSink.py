@@ -62,7 +62,7 @@ class MameSink(Thread):
             except zmq.ZMQError as err:
                 print('error caught', err)
             else:
-                result = self._process_message(message)
+                self._process_message(message)
 
         self.cleanup()
 
