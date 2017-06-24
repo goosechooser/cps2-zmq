@@ -33,14 +33,15 @@ class MockServer():
 
 class MockSink(MameSink):
     def __init__(self, pullfrom, workercontrol="inproc://mockcontrol"):
+        super(MockSink, self).__init__(pullfrom, workercontrol)
         self._context = zmq.Context.instance()
 
-        self._puller = self._context.socket(zmq.PULL)
-        self._puller.bind(pullfrom)
-        self._puller.setsockopt(zmq.LINGER, 0)
+        # self._puller = self._context.socket(zmq.PULL)
+        # self._puller.bind(pullfrom)
+        # self._puller.setsockopt(zmq.LINGER, 0)
 
-        self._control = self._context.socket(zmq.PUB)
-        self._control.bind(workercontrol)
+        # self._control = self._context.socket(zmq.PUB)
+        # self._control.bind(workercontrol)
 
     def run(self, num_messages):
         msgs_recv = 0
@@ -49,7 +50,7 @@ class MockSink(MameSink):
         while msgs_recv != num_messages:
             recv = self._puller.recv_pyobj()
             if recv['message'] == 'closing':
-                self._control.send_string('KILL')
+                self._workerpub.send_string('KILL')
             else:
                 messages.append(recv['message'])
                 msgs_recv += 1
@@ -57,7 +58,7 @@ class MockSink(MameSink):
         return messages
 
     def close(self):
-        self._control.close()
+        self._workerpub.close()
         self._puller.close()
 
 class MockWorker():
