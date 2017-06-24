@@ -49,7 +49,7 @@ def test_work(message, expected):
     ([{'frame_number': 1141, 'sprites': [[420, 69, 300, 1], [1, 1, 1, 1]], 'palettes': [[]]},
       {'frame_number': 0, 'sprites': [], 'palettes': []}], 1)
 ])
-@pytest.mark.timeout(timeout=10, method='thread')
+# @pytest.mark.timeout(timeout=10, method='thread')
 def test_run(server, sink, messages, expected):
     worker = MameWorker.MameWorker("inproc://toworkers", "inproc://mockworkers", "inproc://mockcontrol")
     worker.daemon = True
