@@ -1,5 +1,6 @@
 # pylint: disable=E1101
 
+import time
 from threading import Thread
 import pytest
 import zmq
@@ -63,12 +64,14 @@ class MockSink(MameSink):
         self._puller.close()
 
 class MockWorker():
-    def __init__(self, wid=None, pushto=None, context=None):
+    def __init__(self, wid=None, context=None):
         self._context = context or zmq.Context.instance()
         self._wid = wid
+        self._puller = self._context.socket(zmq.PULL)
+
         self._pusher = self._context.socket(zmq.PUSH)
-        self._pusher.connect(pushto)
         self._messages = []
+        self.msgs_recv = 0
 
     @property
     def wid(self):
@@ -77,6 +80,12 @@ class MockWorker():
     @wid.setter
     def wid(self, value):
         self._wid = value
+
+    def pull_from(self, pullfrom):
+        self._puller.connect(pullfrom)
+
+    def push_to(self, pushto):
+        self._puller.connect(pushto)
 
     @property
     def messages(self):
@@ -93,14 +102,25 @@ class MockWorker():
         for message in self._messages:
             self._pusher.send_pyobj(message)
 
+    def pull_messages(self):
+        working = True
+        while working:
+            message = self._puller.recv_json()
+            self.msgs_recv += 1
+            if message['frame_number'] == 'closing':
+                working = False
+
     def close(self):
+        self._puller.close()
         self._pusher.close()
 
 class MockThreadWorker(Thread):
-    def __init__(self, wid=None, context=None):
+    def __init__(self, pullfrom="inproc://fromclient", wid=None, context=None):
         super(MockThreadWorker, self).__init__()
         self._context = context or zmq.Context.instance()
         self._wid = wid
+        self._puller = self._context.socket(zmq.PULL)
+
         self._pusher = self._context.socket(zmq.PUSH)
         self._pusher.setsockopt(zmq.LINGER, 0)
         self._messages = []
@@ -121,6 +141,9 @@ class MockThreadWorker(Thread):
     def messages(self, value):
         self._messages = value
 
+    def connect_pull(self, pullfrom):
+        self._puller.connect(pullfrom)
+
     def connect_push(self, pushto):
         self._pusher.connect(pushto)
 
@@ -132,7 +155,10 @@ class MockThreadWorker(Thread):
             self._pusher.send_pyobj(message)
 
     def close(self):
-        self._pusher.close()
+        if not self._puller.closed:
+            self._puller.close()
+        if not self._pusher.closed:
+            self._pusher.close()
 
 class MockClient(Thread):
     def __init__(self, port, context=None):
@@ -152,13 +178,11 @@ class MockClient(Thread):
 
     def run(self):
         i = 0
-        # time.sleep(10)
+        time.sleep(5)
         while i < self._msg_limit:
-            print('sending')
             msg = msgpack.packb({'frame_number' : i}, encoding='utf-8')
             self._publisher.send(msg)
             i += 1
-            # time.sleep(2)
 
         msg = msgpack.packb({'frame_number' : 'closing'}, encoding='utf-8')
         self._publisher.send(msg)
@@ -181,7 +205,8 @@ def sink():
 
 @pytest.fixture(scope="module")
 def worker():
-    worker = MockWorker(wid=1, pushto="inproc://frommockworkers")
+    worker = MockWorker(wid=1)
+    worker.pull_from("inproc://tomockworkers")
     yield worker
     worker.close()
 
