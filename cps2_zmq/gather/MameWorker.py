@@ -15,7 +15,7 @@ class MameWorker(Thread):
         id (int): used for debugging or logging purposes.
         context (:obj:`zmq.Context`): required by ZMQ to make the magic happen.
         puller (:obj:`zmq.Context.socket`): A zmq socket set to PULL messages.\
-        The other side of the socket is usually bound by a MameClient.
+        The other side of the socket is usually bound by a MameServer.
         pusher (:obj:`zmq.Context.socket`): A zmq socket set to PUSH processed messages.\
         The other side is connected to the MameSink
         control (:obj:`zmq.Context.socket`): A zmq socket set to SUB.\
@@ -117,7 +117,7 @@ def _process_message(message, logging=False):
     palettes = message['palettes']
 
     # Consider just writing message + masked sprites to file?
-    # would decouple MameSink/MameClient from cps2_zmq.process
+    # would decouple MameSink/MameServer from cps2_zmq.process
     # or write a new class that does that HMM??
     sprites = [Sprite.from_dict(m) for m in masked]
 

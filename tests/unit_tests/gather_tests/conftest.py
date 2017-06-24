@@ -9,7 +9,7 @@ import msgpack
 from cps2_zmq.gather.MameSink import MameSink
 
 
-class MockClient():
+class MockServer():
     def __init__(self, pushto):
         self._context = zmq.Context.instance()
 
@@ -132,9 +132,9 @@ class MockThreadWorker(Thread):
     def close(self):
         self._pusher.close()
 
-class MockServer(Thread):
+class MockClient(Thread):
     def __init__(self, port, context=None):
-        super(MockServer, self).__init__()
+        super(MockClient, self).__init__()
         self._context = context or zmq.Context.instance()
         self._publisher = self._context.socket(zmq.PUB)
         self._publisher.bind(':'.join(["tcp://127.0.0.1", str(port)]))
@@ -166,10 +166,10 @@ class MockServer(Thread):
         self._publisher.close()
 
 @pytest.fixture(scope="module")
-def client():
-    client = MockClient("inproc://toworkers")
-    yield client
-    client.close()
+def server():
+    server = MockServer("inproc://toworkers")
+    yield server
+    server.close()
 
 @pytest.fixture(scope="module")
 def sink():
@@ -200,7 +200,7 @@ def tworkers(request):
         w.close()
 
 @pytest.fixture(scope="module")
-def server():
-    server = MockServer(5666)
-    yield server
-    server.close()
+def client():
+    client = MockClient(5666)
+    yield client
+    client.close()

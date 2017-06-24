@@ -4,7 +4,7 @@ import zmq
 import msgpack
 from cps2_zmq.gather.MameSink import MameSink
 
-class MameClient(object):
+class MameServer(object):
     """
     Write some dope stuff here.
 

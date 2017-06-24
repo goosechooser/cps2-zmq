@@ -50,11 +50,11 @@ def test_work(message, expected):
       {'frame_number': 0, 'sprites': [], 'palettes': []}], 1)
 ])
 @pytest.mark.timeout(timeout=10, method='thread')
-def test_run(client, sink, messages, expected):
+def test_run(server, sink, messages, expected):
     worker = MameWorker.MameWorker("inproc://toworkers", "inproc://mockworkers", "inproc://mockcontrol")
     worker.daemon = True
     worker.start()
-    client.push_messages(messages)
+    server.push_messages(messages)
 
     results = sink.run(expected)
     assert len(results) == expected

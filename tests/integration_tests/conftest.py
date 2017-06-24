@@ -6,9 +6,9 @@ import zmq
 import pymongo
 import msgpack
 
-class MockMameServer(Thread):
+class MockMameClient(Thread):
     def __init__(self, port, collection, context=None):
-        super(MockMameServer, self).__init__()
+        super(MockMameClient, self).__init__()
         self._context = context or zmq.Context.instance()
         self._publisher = self._context.socket(zmq.PUB)
         self._publisher.bind(':'.join(["tcp://127.0.0.1", str(port)]))
@@ -28,7 +28,6 @@ class MockMameServer(Thread):
     def run(self):
         frames = self._db.frames.find(projection={'_id' : 0}, limit=self.msg_limit)
         for frame in frames:
-            print(type(frame))
             msg = msgpack.packb(frame, encoding='utf-8')
             self._publisher.send(msg)
 
@@ -40,7 +39,7 @@ class MockMameServer(Thread):
         self._client.close()
 
 @pytest.fixture(scope="module")
-def server():
-    server = MockMameServer(5666, 'cps2')
-    yield server
-    server.close()
+def client():
+    client = MockMameClient(5666, 'cps2')
+    yield client
+    client.close()

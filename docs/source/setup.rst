@@ -11,6 +11,6 @@ Before using the `gather` package, some setup is required.
 Running the Project
 ===================
 
-* Launch the 'Client' - `python [path to MameClient.py]`
+* Launch the 'Client' - `python [path to MameServer.py]`
 * Launch the 'Server' - from the command line `mame64 [rom_name] -autoboot_script zmq_server.lua`
 * Close the MAME window when you've captured enough data
