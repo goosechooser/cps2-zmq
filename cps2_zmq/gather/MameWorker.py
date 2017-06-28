@@ -1,6 +1,7 @@
 # pylint: disable=E1101
 
-import random
+import sys
+# import random
 from threading import Thread
 import msgpack
 import zmq
@@ -12,89 +13,78 @@ class MameWorker(Thread):
     MameWorker threads are created by a MameSink and cleaned up by the MameSink.
 
     Attributes:
-        id (int): used for debugging or logging purposes.
+        w_id (str): The worker's 'id'. This an address that is appended to the front \
+        of messages it sends to the server.
         context (:obj:`zmq.Context`): required by ZMQ to make the magic happen.
-        puller (:obj:`zmq.Context.socket`): A zmq socket set to PULL messages.\
         The other side of the socket is usually bound by a MameServer.
-        pusher (:obj:`zmq.Context.socket`): A zmq socket set to PUSH processed messages.\
-        The other side is connected to the MameSink
-        control (:obj:`zmq.Context.socket`): A zmq socket set to SUB.\
-        The only time it receives a message on this socket is when its time to stop working.
-        poller (:obj:`zmq.Poller`): Reads from the sockets that receive messages\
-        in a non-blocking manner.
-        state (str): What the worker is currently doing.\
-        Values for this are 'working', 'cleanup', 'closing', and 'done'.
+        socket_addr (str): The address to connect the frontend socket to. This is usually set
+        frontend (:obj:`zmq.Context.socket`): Socket that connects to the MameServer address. \
+        Sends requests for work.
+        working (bool): Whether the worker is in its main loop or closing.
     """
-    def __init__(self, pullfrom, pushto, controlfrom, wid=None, context=None):
+    def __init__(self, w_id, socket_addr, context=None):
         super(MameWorker, self).__init__()
-        self._wid = wid or random.randrange(1, 666)
+        self._w_id = bytes(w_id, encoding='UTF-8')
         self._context = context or zmq.Context.instance()
 
-        self._puller = self._context.socket(zmq.PULL)
-        self._puller.connect(pullfrom)
-        self._puller.setsockopt(zmq.LINGER, 0)
+        self._frontend = self._context.socket(zmq.DEALER)
+        self._frontend.setsockopt_string(zmq.IDENTITY, w_id)
+        self._frontend.connect(socket_addr)
 
-        self._pusher = self._context.socket(zmq.PUSH)
-        self._pusher.connect(pushto)
-
-        self._control = self._context.socket(zmq.SUB)
-        self._control.connect(controlfrom)
-        self._control.setsockopt_string(zmq.SUBSCRIBE, '')
-
-        self._poller = zmq.Poller()
-        self._poller.register(self._puller, zmq.POLLIN)
-        self._poller.register(self._control, zmq.POLLIN)
-
-        self._state = 'working'
+        self._working = True
+        self._msgs_recv = 0
 
     @property
-    def wid(self):
-        return self._wid
+    def w_id(self):
+        """
+        Property.
 
-    def setup(self):
-        self.daemon = True
+        Returns:
+            bytes
+        """
+        return self._w_id
+
+    @w_id.setter
+    def w_id(self, value):
+        if isinstance(value, bytes):
+            self._w_id = value
+        else:
+            self._w_id = bytes(value, encoding='UTF-8')
+    
+    @property
+    def msgs_recv(self):
+        """
+        Property.
+
+        Returns:
+            int
+        """
+        return self._msgs_recv
+
+    def cleanup(self):
+        if not self._frontend.closed:
+            self._frontend.close()
 
     def run(self):
-        """
-        MameWorker is a subclass of Thread, run is called when the thread started.\
-        More specifically, anything related to pulling or pushing messages is handled here.
-        """
-        while self._state == 'working':
-            polled = dict(self._poller.poll())
+        # print('WORKER running')
+        # sys.stdout.flush()
 
-            if polled.get(self._puller) == zmq.POLLIN:
-                message = self._puller.recv()
-                message = msgpack.unpackb(message, encoding='utf-8')
+        while self._working:
+            self._frontend.send_multipart([
+                b'empty',
+                b'ready'
+            ])
 
-                result = _process_message(message)
-                json = {'wid' : self._wid, 'message' : result}
-
-                self._pusher.send_pyobj(json)
-
-            if polled.get(self._control) == zmq.POLLIN:
-                self._state = 'cleanup'
-
-        while self._state == 'cleanup':
-            try:
-                message = self._puller.recv(zmq.NOBLOCK)
-                message = msgpack.unpackb(message, encoding='utf-8')
-            except zmq.Again:
-                self._state = 'done'
-                result = 'threaddead'
-                json = {'wid' : self._wid, 'message' : result}
-
-                self._pusher.send_pyobj(json)
+            _, message = self._frontend.recv_multipart()
+            if message == b'END':
+                self._working = False
             else:
-                result = _work(message)
-                json = {'wid' : self._wid, 'message' : result}
-                self._pusher.send_pyobj(json)
+                self._msgs_recv += 1
+                # print('WORKER', self._w_id, 'received', str(message))
+            #     sys.stdout.flush()
 
-        self._cleanup()
-
-
-    def _cleanup(self):
-        self._pusher.close()
-        self._control.close()
+        self.cleanup()
+        print('WORKER', self._w_id, 'received', self._msgs_recv, 'messages')
 
 def _work(message):
     """

@@ -4,6 +4,12 @@ Unit tests for MameWorker.py
 import pytest
 from cps2_zmq.gather import MameWorker
 
+@pytest.fixture(scope="function")
+def test_worker():
+    worker = MameWorker.MameWorker("1", "inproc://toworkers")
+    yield worker
+    worker.cleanup()
+
 def test_sprite_mask():
     data = [420, 69, 300, 0]
     expected = {'tile_number': '0x012c',
@@ -45,21 +51,24 @@ def test_process_message(message, expected):
     ({'frame_number': 'closing', 'sprites': [], 'palettes': []}, 'closing'),
 ])
 def test_work(message, expected):
+    """
+    Not sure this test/method is useful anymore.
+    If I can figure out the root cause of why json errors
+    were being thrown in the first place, I can get rid of them.
+    """
     result = MameWorker._work(message)
     assert result == expected
 
+@pytest.mark.timeout(timeout=10, method='thread')
 @pytest.mark.parametrize("messages, expected", [
-    ([{'frame_number': 1141, 'sprites': [[420, 69, 300, 1], [1, 1, 1, 1]], 'palettes': [[]]},
-      {'frame_number': 0, 'sprites': [], 'palettes': []}], 1)
+    (1, 1),
+    (10, 10)
 ])
-# @pytest.mark.timeout(timeout=10, method='thread')
-def test_run(server, sink, messages, expected):
-    worker = MameWorker.MameWorker("inproc://toworkers",
-                                   "inproc://mockworkers",
-                                   "inproc://mockcontrol")
-    worker.daemon = True
-    worker.start()
-    server.push_messages(messages)
-    sink.msg_limit = expected
-    results = sink.run()
-    assert len(results) == expected
+def test_run(server, test_worker, messages, expected):
+    # worker = MameWorker.MameWorker("1", "inproc://toworkers")
+    test_worker.start()
+    print("Worker started")
+    server.make_messages(messages)
+    print("Messages made")
+    server.start()
+    assert test_worker.msgs_recv == expected

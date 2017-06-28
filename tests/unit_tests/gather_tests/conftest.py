@@ -10,25 +10,27 @@ from cps2_zmq.gather.MameSink import MameSink
 
 
 class MockServer():
-    def __init__(self, pushto):
-        self._context = zmq.Context.instance()
+    def __init__(self, toworkers):
+        self.context = zmq.Context.instance()
 
-        self._pusher = self._context.socket(zmq.PUSH)
-        self._pusher.bind(pushto)
-        self._pusher.setsockopt(zmq.LINGER, 0)
-
-    @property
-    def pusher(self):
-        return self._pusher
+        self.backend = self.context.socket(zmq.ROUTER)
+        self.backend.bind(toworkers)
+        self.messages = []
 
     def close(self):
-        self._pusher.close()
+        self.backend.close()
 
-    def push_messages(self, messages):
-        messages.append({'frame_number': 'closing', 'sprites': [], 'palettes': []})
-        for msg in messages:
-            packed = msgpack.packb(msg)
-            self._pusher.send(packed)
+    def make_messages(self, num):
+        self.messages = [bytes(str(i), encoding='UTF-8') for i in range(num)]
+        self.messages.append(b'END')
+
+    def start(self):
+        for msg in self.messages:
+            addr, empty, ready = self.backend.recv_multipart()
+            print('MockServer received ready')
+            multi = [addr, empty, msg]
+            print('MockServer sending', multi)
+            self.backend.send_multipart(multi)
 
 
 class MockSink(MameSink):
@@ -152,7 +154,8 @@ class MockThreadWorker(Thread):
 
     def run(self):
         for message in self._messages:
-            self._pusher.send_pyobj(message)
+            # print('thread worker sent', message)
+            self._pusher.send_json(message)
 
     def close(self):
         if not self._puller.closed:
@@ -165,7 +168,7 @@ class MockClient(Thread):
         super(MockClient, self).__init__()
         self._context = context or zmq.Context.instance()
         self._publisher = self._context.socket(zmq.PUB)
-        self._publisher.bind(':'.join(["tcp://127.0.0.1", str(port)]))
+        self._publisher.connect(':'.join(["tcp://127.0.0.1", str(port)]))
         self._msg_limit = 10
 
     @property
@@ -191,17 +194,17 @@ class MockClient(Thread):
     def close(self):
         self._publisher.close()
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def server():
     server = MockServer("inproc://toworkers")
     yield server
     server.close()
 
-@pytest.fixture(scope="module")
-def sink():
-    sink = MockSink("inproc://mockworkers")
-    yield sink
-    sink.close()
+# @pytest.fixture(scope="module")
+# def sink():
+#     sink = MockSink("inproc://mockworkers")
+#     yield sink
+#     sink.close()
 
 @pytest.fixture(scope="module")
 def worker():
@@ -209,14 +212,6 @@ def worker():
     worker.pull_from("inproc://tomockworkers")
     yield worker
     worker.close()
-
-@pytest.fixture(scope="module")
-def workers():
-    workers = [MockWorker(wid=1, pushto="inproc://frommockworkers")]
-    yield workers
-    for w in workers:
-        print('worker', w.wid, 'cleanup')
-        w.close()
 
 @pytest.fixture(scope="module",
                 params=[1, 2])

@@ -1,10 +1,10 @@
 # pylint: disable=E1101
 
+import msgpack
 import zmq
 from zmq.eventloop.ioloop import IOLoop
 from zmq.eventloop.zmqstream import ZMQStream
-import msgpack
-from cps2_zmq.gather.MameSink import MameSink
+from cps2_zmq.gather.MameWorker import MameWorker
 
 class MameServer(object):
     """
@@ -15,82 +15,107 @@ class MameServer(object):
         addr (str): the address where messages are received at.
         port (str): the port, used with address.
         serversub (:obj:`zmq.Context.socket`): A zmq socket set to SUB.\
-        Any messages related to MameWorker status are sent out from here.
-        toworkers (str): the address to push work out
-        workpusher (:obj:`zmq.Context.socket`): A zmq socket set to PUSH.
-        worksink (:obj:`Thread`): a sink for processed messages.
-        working (bool): Used in the main loop.
+        MameClients connect and send messages here.
+        toworkers (str): the address  to push work out
+        backend (:obj:`zmq.Context.socket`): A zmq socket set to ROUTER. \
+        Routes work to the worker that requested it.
+        backstream (:obj:`zmq.eventloop.zmqstream.ZMQStream`): Used for registering callbacks \
+        with the backend socket.
+        msgs_recv (int): Total number of messages received .
     """
     def __init__(self, port, toworkers, context=None):
         self._loop = IOLoop.instance()
         self._context = context or zmq.Context.instance()
-        self._addr = "tcp://localhost"
-        self._startport = port
+        self._addr = "tcp://127.0.0.1"
+        self._port = port
 
         self._serversub = self._context.socket(zmq.SUB)
-        self._serversub.connect(':'.join([self._addr, str(self._startport)]))
+        self._serversub.bind(':'.join([self._addr, str(self._port)]))
         self._serversub.setsockopt_string(zmq.SUBSCRIBE, '')
 
-        self._stream = ZMQStream(self._serversub)
-        self._stream.on_recv(self.handle_message)
+        self._backend = self._context.socket(zmq.ROUTER)
+        self._backend.bind(toworkers)
 
-        self._workpusher = self._context.socket(zmq.PUSH)
-        self._workpusher.bind(toworkers)
+        self._backstream = ZMQStream(self._backend)
+        self._backstream.on_recv(self.handle_router)
 
-        self._worksink = None
         self.msgs_recv = 0
+        self._workers = []
 
     @property
-    def worksink(self):
-        return self._worksink
+    def workers(self):
+        return self._workers
 
-    @worksink.setter
-    def worksink(self, o):
-        if not isinstance(o, MameSink):
-            raise TypeError("worksink must be a MameSink")
-        self._worksink = o
+    @workers.setter
+    def workers(self, value):
+        self._workers = value
 
     def cleanup(self):
         """
         Closes all associated zmq ports.
         """
         self._serversub.close()
-        self._workpusher.close()
-        self._stream.close()
+        self._backend.close()
+        self._backstream.close()
 
     def start(self):
         """
         Start. Everything.
         """
-        print('starting')
-        if self.worksink:
-            self._worksink.start()
+        print('SERVER Starting')
+
+        for worker in self.workers:
+            worker.start()
 
         self._loop.start()
 
-        # while self._working:
-        #     #receive from server/MAME
-        #     message = self._serversub.recv()
-        #     message = msgpack.unpackb(message, encoding='utf-8')
+        self.cleanup()
 
-        #     message = self.process_message(message)
-        #     self._workpusher.send(message)
+        print('Workers have joined')
 
         print("Client Received", self.msgs_recv, "messages")
 
-        if self._worksink:
-            self._worksink.join()
-            print('sink has joined')
-        print('done')
-
-    def handle_message(self, msg):
+    def handle_router(self, msg):
         """
-        Callback. Just unpacks the message and pushes it to workers.
+        Callback. Handles replies from workers.
         """
-        self.msgs_recv += 1
-        msg = msgpack.unpackb(msg[0], encoding='utf-8')
+        #Receives req from worker
+        address, empty, ready = msg
 
-        if msg['frame_number'] == 'closing':
+        #gets message from client
+        sub_message = self._serversub.recv_multipart()
+        unpacked = msgpack.unpackb(sub_message[0], encoding='utf-8')
+
+        if unpacked['frame_number'] != 'closing':
+            self.msgs_recv += 1
+
+            message = bytes(str(unpacked['frame_number']), encoding='UTF-8')
+            self._backend.send_multipart([
+                address,
+                empty,
+                message
+            ])
+        else:
+            close_workers(self._workers, self._backend)
             self._loop.stop()
 
-        self._workpusher.send_json(msg)
+def close_workers(workers, socket):
+    """
+    Sends b'END'
+    """
+    empty = b'empty'
+    message = b'END'
+    
+    for worker in workers:
+        address = worker.w_id
+        socket.send_multipart([
+            address,
+            empty,
+            message
+        ])
+
+if __name__ == '__main__':
+    server = MameServer(5556, "inproc://toworkers")
+    server.workers = [MameWorker(str(num), "inproc://toworkers") for num in range(1, 3)]
+
+    server.start()
