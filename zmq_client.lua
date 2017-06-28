@@ -1,6 +1,5 @@
 -- mame uses its own package path and so it doesn't find lzmq.threads for whatever reason??
 -- package.path = '.\\?.lua;\\?\\init.lua;C:\\lua-5.3.3\\systree\\share\\lua\\5.3\\?\\init.lua;C:\\lua-5.3.3\\systree\\share\\lua\\5.3\\?.lua;C:\\Program Files (x86)\\LuaRocks\\lua\\'
--- local json = require("json")
 local zmq = require("lzmq")
 local mp = require("MessagePack")
 
@@ -28,11 +27,13 @@ function read_sprite_ram(start_addr, num_of_entries)
 		offset = (i-1) * 0x8
         -- ideally would just do one read_u64(start_addr + offset) 
         -- but python throws a fit trying to convert it
-        local byte0 = mem:read_u16(start_addr + offset)
-		local byte1 = mem:read_u16(start_addr + offset + 0x2)
-		local byte2 = mem:read_u16(start_addr + offset + 0x4)
-		local byte3 = mem:read_u16(start_addr + offset + 0x6)
-        sprite_ram[i] = {byte0, byte1, byte2, byte3} 
+        -- local byte0 = mem:read_u16(start_addr + offset)
+		-- local byte1 = mem:read_u16(start_addr + offset + 0x2)
+		-- local byte2 = mem:read_u16(start_addr + offset + 0x4)
+		-- local byte3 = mem:read_u16(start_addr + offset + 0x6)
+        local byte0 = mem:read_u32(start_addr + offset)
+        local byte2 = mem:read_u32(start_addr + offset + 0x4)
+        sprite_ram[i] = {byte0, byte2} 
 	end
 	return sprite_ram
 end
@@ -59,13 +60,13 @@ function get_palettes(addr)
 end
 
 -- overall we're using a pub-sub model of messaging
--- the instance of MAME acts like the 'server' and just sends data out
+-- the instance of MAME is a 'client' that just sends messages
 -- doesnt care if the message gets received, drops messages if no subscribers (vaguely like UDP)
-function setup_server()
-    print("setting up publisher")
+function setup_client()
+    print("setting up publisher client")
     local publisher, err = context:socket{
         zmq.PUB,
-        bind = "tcp://*:5556"
+        connect = "tcp://127.0.0.1:5556"
     }
     zassert(publisher, err)
     return publisher
@@ -79,54 +80,40 @@ function send_message()
 	local sprites_ = read_sprite_ram(SPRITE_START_ADDR, RUN_LENGTH)
     local palettes_ = get_palettes(0x90C000)
 
-    frame = {
+    local frame = {
         frame_number = frame_number,
         sprites = sprites_,
         palettes = palettes_
     }
 
     local message = mp.pack(frame)
+
 -- not sure if any benefit could come from using a multi-part messaging scheme
--- im working on a machine with 16gb of ram so lmao you think im gonna make this leaner
     publisher:send(message)
 end
 
--- MAME provided callback 'emu.register_start(callback)' doesnt get called when MAME starts??
 -- set up
-publisher = setup_server()
+publisher = setup_client()
 
--- callbacks
+-- CALL BACKS
 -- when we close MAME we want to clean up our sockets and zmq context
 -- your terminal will also spew a bunch of garbage because register_frame seems to get called at the same time
 -- tries to send messages out of a socket that doesnt exist and blows up
 -- i'll file a bug report when they approve my forum accounts 
 emu.register_stop(function()
-    print("server closing")
-    last_msg = {
+    print("client closing")
+    local last_msg = {
         frame_number = "closing"
     }
-
+    
     message = mp.pack(last_msg)
-    print('msg encoded')
     publisher:send(message)
-    print('msg sent')
+
     publisher:close()
-    print('socket closed')
     context:term()
-    print('context terminated')
 end)
 
--- EVERY FRAME
+-- every frame
 emu.register_frame(function()
     send_message()
 end)
-
--- there is also
--- emu.register_frame_done(function()
---     fun stuff here
---     wow maybe receive messages??
--- end)
-
--- not super sure of how the frame/frame_done callbacks interact
--- trying to send AND receive seems to drop machine speed to 70% which is 
--- not great
