@@ -13,5 +13,4 @@ Currently only :mod:`MameWorker` is provided for processing messages, but other 
    :maxdepth: 1
 
    MameServer
-   MameSink
    MameWorker

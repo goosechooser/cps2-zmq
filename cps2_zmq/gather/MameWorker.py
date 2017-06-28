@@ -10,7 +10,6 @@ from cps2_zmq.process import Sprite, Frame
 class MameWorker(Thread):
     """
     MameWorker processes messages sent by a MAME process.\
-    MameWorker threads are created by a MameSink and cleaned up by the MameSink.
 
     Attributes:
         w_id (str): The worker's 'id'. This an address that is appended to the front \
@@ -107,7 +106,6 @@ def _process_message(message, logging=False):
     palettes = message['palettes']
 
     # Consider just writing message + masked sprites to file?
-    # would decouple MameSink/MameServer from cps2_zmq.process
     # or write a new class that does that HMM??
     sprites = [Sprite.from_dict(m) for m in masked]
 
