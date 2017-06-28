@@ -6,9 +6,6 @@ import pytest
 import zmq
 import msgpack
 
-from cps2_zmq.gather.MameSink import MameSink
-
-
 class MockServer():
     def __init__(self, toworkers):
         self.context = zmq.Context.instance()
@@ -31,39 +28,6 @@ class MockServer():
             multi = [addr, empty, msg]
             print('MockServer sending', multi)
             self.backend.send_multipart(multi)
-
-
-class MockSink(MameSink):
-    def __init__(self, pullfrom, workercontrol="inproc://mockcontrol"):
-        super(MockSink, self).__init__(pullfrom, workercontrol)
-        self._context = zmq.Context.instance()
-        self._msg_limit = 10
-
-    @property
-    def msg_limit(self):
-        return self._msg_limit
-
-    @msg_limit.setter
-    def msg_limit(self, value):
-        self._msg_limit = value
-
-    def run(self):
-        msgs_recv = 0
-        messages = []
-
-        while msgs_recv != self._msg_limit:
-            recv = self._puller.recv_pyobj()
-            if recv['message'] == 'closing':
-                self._workerpub.send_string('KILL')
-            else:
-                messages.append(recv['message'])
-                msgs_recv += 1
-
-        return messages
-
-    def close(self):
-        self._workerpub.close()
-        self._puller.close()
 
 class MockWorker():
     def __init__(self, wid=None, context=None):
@@ -199,12 +163,6 @@ def server():
     server = MockServer("inproc://toworkers")
     yield server
     server.close()
-
-# @pytest.fixture(scope="module")
-# def sink():
-#     sink = MockSink("inproc://mockworkers")
-#     yield sink
-#     sink.close()
 
 @pytest.fixture(scope="module")
 def worker():
