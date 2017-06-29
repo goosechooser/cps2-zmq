@@ -9,7 +9,7 @@ from cps2_zmq.process import Sprite, Frame
 
 class MameWorker(Thread):
     """
-    MameWorker processes messages sent by a MAME process.\
+    MameWorker processes messages.
 
     Attributes:
         w_id (str): The worker's 'id'. This an address that is appended to the front \
@@ -65,22 +65,21 @@ class MameWorker(Thread):
             self._frontend.close()
 
     def run(self):
-        # print('WORKER running')
-        # sys.stdout.flush()
+        empty = b'empty'
+        ready = b'ready'
+        end = b'END'
 
         while self._working:
-            self._frontend.send_multipart([
-                b'empty',
-                b'ready'
-            ])
+            self._frontend.send_multipart([empty, ready])
 
             _, message = self._frontend.recv_multipart()
-            if message == b'END':
+
+            if message == end:
                 self._working = False
             else:
                 self._msgs_recv += 1
+                # do things here
                 # print('WORKER', self._w_id, 'received', str(message))
-            #     sys.stdout.flush()
 
         self.cleanup()
         print('WORKER', self._w_id, 'received', self._msgs_recv, 'messages')
