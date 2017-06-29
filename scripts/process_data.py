@@ -18,5 +18,19 @@ def main(coll, folder):
     client.close()
     print('done')
 
+def qdb(coll):
+    client = pymongo.MongoClient()
+    db = client['cps2']
+    frames = db['frames']
+    print(frames.count())
+
+    for frame in frames.find(limit=5):
+        print(frame)
+
+    client.close()
+    print('done')
+
+
 if __name__ == '__main__':
-    main('cps2', 'D:\\Code\\production_data\\')
+    # main('cps2', 'D:\\Code\\production_data\\')
+    qdb('csp2')
