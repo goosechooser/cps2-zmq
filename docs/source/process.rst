@@ -14,3 +14,5 @@ Modules
     Sprite
     ColorTile
     Tile
+
+    encoding
