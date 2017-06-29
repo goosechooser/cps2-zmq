@@ -48,3 +48,30 @@ def test_from_image(tmpdir_factory, testframe, gfxfile):
 
         for tile1, tile2 in zip(sprite.tiles, test_sprite.tiles):
             assert tile1 == tile2
+
+
+def test_sprite_mask():
+    data = [420, 69, 300, 0]
+    expected = {'tile_number': '0x012c',
+                'priority': 0, 'xflip': 0, 'x': 420,
+                'y': 69, 'eol': 0, 'yflip': 0,
+                'height': 1, 'offset': 0, 'width': 1, 'pal_number': '0'}
+    assert Sprite.sprite_mask(data) == expected
+
+def test_mask_all():
+    data = [[420, 69, 300, 1], [1, 1, 1, 1]]
+    result1 = {'tile_number': '0x012c',
+               'priority': 0, 'xflip': 0, 'x': 420,
+               'y': 69, 'eol': 0, 'yflip': 0,
+               'height': 1, 'offset': 0, 'width': 1, 'pal_number': '1'}
+
+    result2 = {'tile_number': '0x01',
+               'priority': 0, 'xflip': 0, 'x': 1,
+               'y': 1, 'eol': 0, 'yflip': 0,
+               'height': 1, 'offset': 0, 'width': 1, 'pal_number': '1'}
+
+    expected = [result1, result2]
+    results = Sprite.mask_all(data)
+
+    for i, r in enumerate(results):
+        assert r == expected[i]

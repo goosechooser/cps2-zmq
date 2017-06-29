@@ -101,7 +101,7 @@ def _process_message(message, logging=False):
     """
     A private method. Where the actual message processing is done.
     """
-    masked = mask_all(message['sprites'])
+    masked = Sprite.mask_all(message['sprites'])
     palettes = message['palettes']
 
     # Consider just writing message + masked sprites to file?
@@ -119,48 +119,7 @@ def _log(frame_number, sprites, palettes):
     frame = Frame.new(frame_number, sprites, palettes)
     frame.to_file("frame_data\\")
 
-# sprites is a list actually
-def mask_all(sprites):
-    """
-    Calls sprite_mask on every value in the sprites dict.
 
-    Args:
-        sprites (:obj:`list` of :obj:`list`): the raw sprite data
 
-    Returns:
-        a list.
-    """
-    masked = [sprite_mask(s) for s in sprites if all(s)]
-    return masked
 
-def sprite_mask(byte_data):
-    """
-    Turns the 8 bytes of raw sprite information into something usable.
-
-    Args:
-        byte_data (:obj:`list`): a list of 4 uint16 containing all the data for a Sprite.
-
-    Returns:
-        a dict. This dict can be used by the Sprite factory method :meth:`fromdict`.
-    """
-    dict_ = {}
-    dict_['priority'] = (byte_data[0] & 0xC000) >> 14
-    dict_['x'] = byte_data[0] & 0x03FF
-    dict_['y'] = byte_data[1] & 0x03FF
-    dict_['eol'] = (byte_data[1] & 0x8000) >> 15
-    #hex: {0:x};  oct: {0:o};  bin: {0:b}".format(42)
-    top_half = "{0:#x}".format((byte_data[1] & 0x6000) >> 13)
-    bottom_half = "{0:x}".format(byte_data[2])
-    dict_['tile_number'] = ''.join([top_half, bottom_half])
-    dict_['height'] = ((byte_data[3] & 0xF000) >> 12) + 1
-    dict_['width'] = ((byte_data[3] & 0x0F00) >> 8) + 1
-    #(0= Offset by X:-64,Y:-16, 1= No offset)
-    dict_['offset'] = (byte_data[3] & 0x0080) >> 7
-    #Y flip, X flip (1= enable, 0= disable)
-    dict_['yflip'] = (byte_data[3] & 0x0040) >> 69
-    dict_['xflip'] = (byte_data[3] & 0x0020) >> 5
-    dict_['pal_number'] = "{0:d}".format(byte_data[3] & 0x001F)
-    # dict_['mem_addr'] = "{0:x}".format(byte_data[4])
-
-    return dict_
     
