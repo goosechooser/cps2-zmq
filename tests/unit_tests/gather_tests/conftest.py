@@ -32,41 +32,10 @@ class MockServer():
 class MockWorker():
     def __init__(self, wid=None, context=None):
         self._context = context or zmq.Context.instance()
-        self._wid = wid
-        self._puller = self._context.socket(zmq.PULL)
-
-        self._pusher = self._context.socket(zmq.PUSH)
-        self._messages = []
+        self.w_id = wid
+        self.frontend = self._context.socket(zmq.DEALER)
+        self.messages = []
         self.msgs_recv = 0
-
-    @property
-    def wid(self):
-        return self._wid
-
-    @wid.setter
-    def wid(self, value):
-        self._wid = value
-
-    def pull_from(self, pullfrom):
-        self._puller.connect(pullfrom)
-
-    def push_to(self, pushto):
-        self._puller.connect(pushto)
-
-    @property
-    def messages(self):
-        return self._messages
-
-    @messages.setter
-    def messages(self, value):
-        self._messages = value
-
-    def setup(self):
-        pass
-
-    def start(self):
-        for message in self._messages:
-            self._pusher.send_pyobj(message)
 
     def pull_messages(self):
         working = True
@@ -77,14 +46,13 @@ class MockWorker():
                 working = False
 
     def close(self):
-        self._puller.close()
-        self._pusher.close()
+        self.frontend.close()
 
 class MockThreadWorker(Thread):
     def __init__(self, pullfrom="inproc://fromclient", wid=None, context=None):
         super(MockThreadWorker, self).__init__()
         self._context = context or zmq.Context.instance()
-        self._wid = wid
+        self._w_id = wid
         self._puller = self._context.socket(zmq.PULL)
 
         self._pusher = self._context.socket(zmq.PUSH)
@@ -92,12 +60,12 @@ class MockThreadWorker(Thread):
         self._messages = []
 
     @property
-    def wid(self):
-        return self._wid
+    def w_id(self):
+        return self._w_id
 
-    @wid.setter
+    @w_id.setter
     def wid(self, value):
-        self._wid = value
+        self._w_id = value
 
     @property
     def messages(self):
@@ -166,8 +134,8 @@ def server():
 
 @pytest.fixture(scope="module")
 def worker():
-    worker = MockWorker(wid=1)
-    worker.pull_from("inproc://tomockworkers")
+    worker = MockWorker()
+    # worker.pull_from("inproc://tomockworkers")
     yield worker
     worker.close()
 
