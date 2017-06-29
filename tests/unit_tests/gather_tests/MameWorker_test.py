@@ -10,10 +10,21 @@ def test_worker():
     yield worker
     worker.cleanup()
 
+@pytest.mark.timeout(timeout=10, method='thread')
+@pytest.mark.parametrize("messages, expected", [
+    (1, 1),
+    (10, 10)
+])
+def test_run(server, test_worker, messages, expected):
+    test_worker.start()
+    print("Worker started")
 
-# Get actual data to test with
-# Ignores any list with a 0 in it, is that supposed to happen?
+    server.make_messages(messages)
+    print("Messages made")
 
+    server.start()
+
+    assert test_worker.msgs_recv == expected
 
 @pytest.mark.parametrize("message, expected", [
     ({'frame_number': 1141, 'sprites': [[420, 69, 300, 1], [1, 1, 1, 1]], 'palettes': [[]]}, 1141),
@@ -36,18 +47,4 @@ def test_work(message, expected):
     result = MameWorker._work(message)
     assert result == expected
 
-@pytest.mark.timeout(timeout=10, method='thread')
-@pytest.mark.parametrize("messages, expected", [
-    (1, 1),
-    (10, 10)
-])
-def test_run(server, test_worker, messages, expected):
-    test_worker.start()
-    print("Worker started")
 
-    server.make_messages(messages)
-    print("Messages made")
-
-    server.start()
-
-    assert test_worker.msgs_recv == expected

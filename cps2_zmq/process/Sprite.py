@@ -316,3 +316,4 @@ def mask_all(sprites):
     """
     masked = [sprite_mask(s) for s in sprites if all(s)]
     return masked
+    

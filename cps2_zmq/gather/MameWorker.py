@@ -118,8 +118,3 @@ def _process_message(message, logging=False):
 def _log(frame_number, sprites, palettes):
     frame = Frame.new(frame_number, sprites, palettes)
     frame.to_file("frame_data\\")
-
-
-
-
-    

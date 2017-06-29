@@ -75,3 +75,4 @@ def test_mask_all():
 
     for i, r in enumerate(results):
         assert r == expected[i]
+        
