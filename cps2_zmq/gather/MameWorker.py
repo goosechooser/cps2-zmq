@@ -1,7 +1,8 @@
 # pylint: disable=E1101
+"""
+MameWorker.py
+"""
 
-import sys
-# import random
 from threading import Thread
 import msgpack
 import zmq
@@ -49,7 +50,7 @@ class MameWorker(Thread):
             self._w_id = value
         else:
             self._w_id = bytes(value, encoding='UTF-8')
-    
+
     @property
     def msgs_recv(self):
         """
@@ -61,6 +62,9 @@ class MameWorker(Thread):
         return self._msgs_recv
 
     def cleanup(self):
+        """
+        Closes associated zmq ports and streams.
+        """
         if not self._frontend.closed:
             self._frontend.close()
 
@@ -78,11 +82,26 @@ class MameWorker(Thread):
                 self._working = False
             else:
                 self._msgs_recv += 1
-                # do things here
-                # print('WORKER', self._w_id, 'received', str(message))
+                unpacked = msgpack.unpackb(message, encoding='utf-8')
+                try:
+                    process(unpacked)
+                except Exception as err:
+                    print(err)
 
         self.cleanup()
         print('WORKER', self._w_id, 'received', self._msgs_recv, 'messages')
+
+def process(message):
+    masked = Sprite.mask_all(message['sprites'])
+    palettes = message['palettes']
+    frame_number = message['frame_number']
+    # Consider just writing message + masked sprites to file?
+    # or write a new class that does that HMM??
+    sprites = [Sprite.from_dict(m) for m in masked]
+
+    result = Frame.new(frame_number, sprites, palettes)
+    result.to_file("frame_data\\")
+    return result
 
 def _work(message):
     """

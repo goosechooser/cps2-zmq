@@ -95,7 +95,7 @@ class MameServer(object):
         if unpacked['frame_number'] != 'closing':
             self.msgs_recv += 1
 
-            message = bytes(str(unpacked['frame_number']), encoding='UTF-8')
+            message = msgpack.packb(unpacked)
             self._backend.send_multipart([address, empty, message])
 
         else:
