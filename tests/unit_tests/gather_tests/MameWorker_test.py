@@ -25,7 +25,7 @@ def test_run(server, test_worker, messages, expected):
     server.start()
 
     assert test_worker.msgs_recv == expected
-
+    
 @pytest.mark.parametrize("message, expected", [
     ({'frame_number': 1141, 'sprites': [[420, 69, 300, 1], [1, 1, 1, 1]], 'palettes': [[]]}, 1141),
 ])
