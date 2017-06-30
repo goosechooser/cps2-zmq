@@ -12,81 +12,35 @@ class Sprite(object):
         base_tile (str): the address in memory of the first :py:mod:`~cps2_zmq.gather.Tile.Tile` in the grouping
         tiles (:obj:`list` of :py:mod:`~cps2_zmq.gather.Tile.Tile`): a list of Tiles that make up the Sprite
         palnum (int): which of the 32 palettes in a Frame the Sprite uses
-        loc (int, int): the (x,y) coordinate where the Sprite will be drawn on the screen
+        location (int, int): the (x,y) coordinate where the Sprite will be drawn on the screen
         size (int, int): (width, height) the size of the Sprite in Tiles.
             (1, 1) means a single Tile.
         flips (int, int): (xflip, yflip) determines whether the Sprite needs to be flipped over its X or Y axis.
         priority (int): determines what other Sprites will be covered or which Sprites will cover this Sprite.
             0 is lowest, 3 is highest.
     """
-    def __init__(self, base_tile, tiles, palnum, loc, size, flips, priority=0):
-        self._base_tile = base_tile
-        self._tiles = tiles
-        self._palnum = palnum
-        self._loc = loc
-        self._size = size
-        self._flips = flips
-        self._priority = priority
+    def __init__(self, base_tile, tiles, palnum, location, size, flips, priority=0):
+        self.base_tile = base_tile
+        self.tiles = tiles
+        self.palnum = palnum
+        self.location = location
+        self.size = size
+        self.flips = flips
+        self.priority = priority
 
     def __repr__(self):
-        addrs = [tile.address for tile in self._tiles if tile]
-        loc = " Location: (" + str(self._loc[0]) + ", " + str(self._loc[1])
-        size = " Size: (" + str(self._size[0]) + ", " + str(self._size[1])
+        addrs = [tile.address for tile in self.tiles if tile]
+        loc = " Location: (" + str(self.location[0]) + ", " + str(self.location[1])
+        size = " Size: (" + str(self.size[0]) + ", " + str(self.size[1])
         return "Sprite contains tiles: " + str(addrs) + loc + ")" + size + ")"
 
-    @property
-    def base_tile(self):
-        return self._base_tile
 
-    @base_tile.setter
-    def base_tile(self, value):
-        self._base_tile = value
-
-    @property
-    def tiles(self):
-        return self._tiles
-
-    @tiles.setter
-    def tiles(self, value):
-        self._tiles = value
-
-    @property
-    def palnum(self):
-        return self._palnum
-
-    @palnum.setter
-    def palnum(self, value):
-        self._palnum = value
-
-    @property
-    def location(self):
-        return self._loc
-
-    @location.setter
-    def location(self, value):
-        self._loc = value
-
-    @property
-    def size(self):
-        return self._size
-
-    @property
-    def flips(self):
-        return self._flips
-
-    @property
-    def priority(self):
-        return self._priority
-
-    @priority.setter
-    def priority(self, value):
-        self._priority = value
 
     def height(self):
-        return self._size[1]
+        return self.size[1]
 
     def width(self):
-        return self._size[0]
+        return self.size[0]
 
     def to_array(self, flip=True):
         """
@@ -100,14 +54,14 @@ class Sprite(object):
             a 2D numpy array.
         """
 
-        arrays = [tile.to_array() for tile in self._tiles]
-        array2d = list2d(arrays, self._size)
+        arrays = [tile.to_array() for tile in self.tiles]
+        array2d = list2d(arrays, self.size)
         array_rows = [np.concatenate(row, axis=1) for row in array2d]
         preflip = np.concatenate(array_rows, axis=0)
 
-        if flip and self._flips[0]:
+        if flip and self.flips[0]:
             preflip = np.fliplr(preflip)
-        if flip and self._flips[1]:
+        if flip and self.flips[1]:
             preflip = np.flipud(preflip)
 
         return preflip
@@ -120,8 +74,8 @@ class Sprite(object):
             palette (dict): the palette to use.
         """
 
-        self._tiles = [ColorTile.from_tile(tile, palette)
-                       for tile in self._tiles
+        self.tiles = [ColorTile.from_tile(tile, palette)
+                       for tile in self.tiles
                        if isinstance(tile, Tile.Tile)]
 
     def to_bmp(self, path_to_save):
@@ -161,7 +115,7 @@ class Sprite(object):
         Args:
             path (str): The location to save to.
         """
-        name = '_'.join(['sprite', str(self._base_tile)])
+        name = '_'.join(['sprite', str(self.base_tile)])
         file_name = '.'.join([name, 'json'])
         path = '\\'.join([path, file_name])
 

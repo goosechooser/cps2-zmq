@@ -12,57 +12,22 @@ class Tile(object):
     * 16x16 tiles are made up of 4 8x8 tiles and these subtiles are row interleaved. ex: [[tile1, tile3], [tile2, tile4]]
 
     Attributes:
-            addr (int): the address in memory the tile resides at.
+            address (int): the address in memory the tile resides at.
             data (:obj:`bytes`): 32 bytes for a 8x8 tile or 128 bytes for a 16x16 tile.
             dimensions (int): 8 for an 8x8 tile, 16 for a 16x16 tile.
     """
-    def __init__(self, addr, data, dimensions=16):
-        """
-        Constructs a new :obj:`Tile` object.
-
-        Args:
-            addr (int): the address in memory the tile resides at
-            data (bytes): 32 bytes for a 8x8 tile or 128 bytes for a 16x16 tile
-            dimensions (int, optional): 8 for an 8x8 tile, 16 for a 16x16 tile, defaults to 16
-        """
-        self._addr = addr
-        self._data = data
-        self._dims = dimensions
+    def __init__(self, address, data, dimensions=16):
+        self.address = address
+        self.data = data
+        self.dimensions = dimensions
 
     def __eq__(self, other):
-        return self._addr == other.address and self._data == other.data
+        return self.address == other.address and self.data == other.data
 
     def __repr__(self):
-        return ' '.join(["Tile:", str(self._addr), 'size:', str(self._dims)])
+        return ' '.join(["Tile:", str(self.address), 'size:', str(self.dimensions)])
 
-    @property
-    def address(self):
-        """
-        Get the address in memory where the tile is located.
-        """
-        return self._addr
 
-    @address.setter
-    def address(self, value):
-        self._addr = value
-
-    @property
-    def data(self):
-        """
-        Get data.
-        """
-        return self._data
-
-    @data.setter
-    def data(self, value):
-        self._data = value
-
-    @property
-    def dimensions(self):
-        """
-        Get dimensions of the Tile
-        """
-        return self._dims
 
     def unpack(self):
         """
@@ -73,15 +38,15 @@ class Tile(object):
             a :obj:`bytes` of the unpacked data.
         """
         tile_fmt = Struct(32 * 'c')
-        tile_iter = tile_fmt.iter_unpack(self._data)
+        tile_iter = tile_fmt.iter_unpack(self.data)
 
         # need to interleave the 4 8x8 tiles in a 16x16 tile
-        if self._dims == 16:
-            interleaved = Tile._interleave_subtiles(self._data)
+        if self.dimensions == 16:
+            interleaved = Tile._interleave_subtiles(self.data)
             iter_ = tile_fmt.iter_unpack(interleaved)
         else:
             tile_fmt = Struct(32 * 'c')
-            tile_iter = tile_fmt.iter_unpack(self._data)
+            tile_iter = tile_fmt.iter_unpack(self.data)
             iter_ = tile_iter
 
         tiles = [Tile._bitplanes_to_tile(b''.join(tile)) for tile in iter_]
@@ -102,10 +67,10 @@ class Tile(object):
         tile_iter = tile_fmt.iter_unpack(data)
 
         vals = [Tile._tile_to_bitplanes(b''.join(tile)) for tile in tile_iter]
-        self._data = b''.join(vals)
+        self.data = b''.join(vals)
 
-        if self._dims == 16:
-            self._data = Tile._deinterleave_subtiles(self._data)
+        if self.dimensions == 16:
+            self.data = Tile._deinterleave_subtiles(self.data)
 
     def to_array(self):
         """
@@ -114,7 +79,7 @@ class Tile(object):
         Returns:
             a numpy.array
         """
-        arr = np.frombuffer(self._data, dtype=np.uint8).reshape((self._dims, self._dims))
+        arr = np.frombuffer(self.data, dtype=np.uint8).reshape((self.dimensions, self.dimensions))
         return arr
 
     def to_bmp(self, path):
@@ -246,13 +211,13 @@ class Tile(object):
     # [subtile2-row1] [subtile4-row1]
     # [subtile4-row16] [subtile4-row16]
     @staticmethod
-    def _interleave_subtiles(tile_data):
+    def _interleave_subtiles(tiledata):
         """Row interleaves the 4 8x8 subtiles in a 16x16 tile.
 
         Returns bytes().
         """
         tile_fmt = Struct(32 * 'c')
-        tile_iter = tile_fmt.iter_unpack(tile_data)
+        tile_iter = tile_fmt.iter_unpack(tiledata)
 
         subtiles = [b''.join(subtile) for subtile in tile_iter]
 
@@ -354,8 +319,8 @@ class EmptyTile(Tile):
 
     def to_array(self):
         zero = int('0x20', 16).to_bytes(1, byteorder='big')
-        row = [zero] * self._dims
-        tile = [row] * self._dims
+        row = [zero] * self.dimensions
+        tile = [row] * self.dimensions
 
         return np.array(tile)
 

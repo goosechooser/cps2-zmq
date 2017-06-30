@@ -1,5 +1,7 @@
 import jsonpickle
+import json
 from PIL import Image
+from cps2_zmq.process import encoding
 
 class Frame(object):
     """
@@ -16,33 +18,13 @@ class Frame(object):
         """
         Construct a new 'Frame' object. In most cases you want to use the factory methods
         """
-        self._fnumber = fnumber
-        self._sprites = sprites
-        self._palettes = palettes
+        self.fnumber = fnumber
+        self.sprites = sprites
+        self.palettes = palettes
 
     def __repr__(self):
-        return "Frame {} has {} sprites".format(self._fnumber, len(self._sprites))
+        return "Frame {} has {} sprites".format(self.fnumber, len(self.sprites))
 
-    @property
-    def fnumber(self):
-        """
-        Get the fnumber.
-        """
-        return self._fnumber
-
-    @property
-    def sprites(self):
-        """
-        Get the sprites.
-        """
-        return self._sprites
-
-    @property
-    def palettes(self):
-        """
-        Get the palettes.
-        """
-        return self._palettes
 
     def add_sprites(self, sprites):
         """
@@ -51,7 +33,7 @@ class Frame(object):
         Args:
             sprites (:obj:`list` of :obj:`Sprite.Sprite`): a list of sprites
         """
-        self._sprites.extend(sprites)
+        self.sprites.extend(sprites)
 
     # Only needs to create a png, doesn't need to color in sprites
     # Issues arise from assuming all the sprites are already colored
@@ -65,7 +47,7 @@ class Frame(object):
             imsize (int, int, optional): The size of the PNG file. Defaults to (400, 400)
         """
         canvas = Image.new('RGB', imsize)
-        for sprite in self._sprites:
+        for sprite in self.sprites:
             canvas.paste(
                 Image.fromarray(sprite.to_array(), 'RGB'),
                 sprite.location
@@ -79,12 +61,13 @@ class Frame(object):
         Args:
             path (str): The location to save to.
         """
-        name = '_'.join(['frame', str(self._fnumber)])
+        name = '_'.join(['frame', str(self.fnumber)])
         file_name = '.'.join([name, 'json'])
         path = '\\'.join([path, file_name])
 
         with open(path, 'w') as f:
-            f.write(jsonpickle.encode(self))
+            f.write(json.dumps(self, cls=encoding.Cps2Encoder))
+            # f.write(jsonpickle.encode(self))
 
 # Factories
 def new(fnumber, sprites, palettes):
