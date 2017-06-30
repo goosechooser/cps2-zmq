@@ -1,15 +1,6 @@
 import pytest
 from cps2_zmq.process import tile_operations, Sprite
 
-# Make this a real test
-# should supply a test input + palette and check output
-# @pytest.mark.skip
-def test_colortile(testframe, gfxfile):
-    sprite = testframe.sprites[0]
-    palette = testframe.palettes[sprite.palnum]
-    sprite.tiles = tile_operations.read_tiles_from_file(gfxfile, sprite.tiles)
-    sprite.color_tiles(palette)
-
 # WORKS
 # Not a real test though
 @pytest.mark.skip

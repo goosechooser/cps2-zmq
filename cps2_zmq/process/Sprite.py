@@ -6,18 +6,16 @@ from cps2_zmq.process import Tile, ColorTile
 
 class Sprite(object):
     """
-    A Sprite encapsulates a collection of :py:mod:`~cps2_zmq.gather.Tile.Tile` that use the same palette.
+    A Sprite is a grouping of :py:mod:`~cps2_zmq.gather.Tile.Tile` that use the same palette.
 
     Attributes:
-        base_tile (str): the address in memory of the first :py:mod:`~cps2_zmq.gather.Tile.Tile` in the grouping
-        tiles (:obj:`list` of :py:mod:`~cps2_zmq.gather.Tile.Tile`): a list of Tiles that make up the Sprite
+        base_tile (str): the memory address of the first :py:mod:`~cps2_zmq.gather.Tile.Tile`
+        tiles (:obj:`list` of :py:mod:`~cps2_zmq.gather.Tile.Tile`): Tiles that make up the Sprite
         palnum (int): which of the 32 palettes in a Frame the Sprite uses
         location (int, int): the (x,y) coordinate where the Sprite will be drawn on the screen
-        size (int, int): (width, height) the size of the Sprite in Tiles.
-            (1, 1) means a single Tile.
-        flips (int, int): (xflip, yflip) determines whether the Sprite needs to be flipped over its X or Y axis.
-        priority (int): determines what other Sprites will be covered or which Sprites will cover this Sprite.
-            0 is lowest, 3 is highest.
+        size (int, int): (width, height) the size of the Sprite in Tiles. (1, 1) means a single Tile
+        flips (int, int): (flipx, flipy) determines if the Sprite is flipped over its X or Y axis
+        priority (int): determines which layer the Sprite is displayed on. 0 is lowest, 3 is highest
     """
     def __init__(self, base_tile, tiles, palnum, location, size, flips, priority=0):
         self.base_tile = base_tile
