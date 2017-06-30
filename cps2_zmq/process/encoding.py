@@ -3,8 +3,24 @@
 For serializing our objects.
 For deserializing our objects - soon.
 """
+import importlib
 import json
 from cps2_zmq.process import Frame, Sprite, Tile
+
+class Cps2Decoder(json.JSONDecoder):
+    def __init__(self):
+        json.JSONDecoder.__init__(self, object_hook=self.dict_to_obj)
+
+    def dict_to_obj(self, d):
+        if '__type__' not in d:
+            return d
+
+        type_ = d.pop('__type__')
+        if type_ == 'tile':
+            module = importlib.import_module('cps2_zmq.process.Tile')
+            class_ = getattr(module, 'Tile')
+            args = dict((key, value) for key, value in d.items())
+            return class_(**args)
 
 class Cps2Encoder(json.JSONEncoder):
     """
@@ -18,9 +34,9 @@ class Cps2Encoder(json.JSONEncoder):
             return handle_sprite_dict(o)
 
         if isinstance(o, Frame.Frame):
-            dict_ = o.__dict__
+            dict_ = dict((k, v) for k, v in o.__dict__.items())
             dict_['_sprites'] = [handle_sprite_dict(s) for s in dict_['_sprites']]
-            dict_['__type__'] = 'Frame'
+            dict_['__type__'] = 'frame'
             return dict_
 
         return json.JSONEncoder.default(self, o)
@@ -35,8 +51,8 @@ def handle_tile_dict(obj):
     Returns:
         a dict.
     """
-    tile = obj.__dict__
-    tile['__type__'] = 'Tile'
+    tile = dict((k, v) for k, v in obj.__dict__.items())
+    tile['__type__'] = 'tile'
     return tile
 
 def handle_sprite_dict(obj):
@@ -51,7 +67,7 @@ def handle_sprite_dict(obj):
     """
     sprite = dict([(k, v) for k, v in obj.__dict__.items() if k != '_tiles'])
     sprite['_tiles'] = [handle_tile_dict(tile) for tile in obj.tiles]
-    sprite['__type__'] = 'Sprite'
+    sprite['__type__'] = 'sprite'
 
     return sprite
     
