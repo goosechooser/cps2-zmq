@@ -75,8 +75,8 @@ class Sprite(object):
         """
 
         self.tiles = [ColorTile.from_tile(tile, palette)
-                       for tile in self.tiles
-                       if isinstance(tile, Tile.Tile)]
+                      for tile in self.tiles
+                      if isinstance(tile, Tile.Tile)]
 
     def to_bmp(self, path_to_save):
         """
