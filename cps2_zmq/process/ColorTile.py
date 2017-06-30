@@ -10,28 +10,28 @@ class ColorTile(Tile):
     ColorTile is Tile with a color palette.
 
     Attributes:
-            addr (int): the address in memory the tile resides at.
+            address (int): the address in memory the tile resides at.
             data (:obj:`bytes`): 32 bytes for a 8x8 tile or 128 bytes for a 16x16 tile.
-            dimensions (int): 8 for an 8x8 tile, 16 for a 16x16 tile.
             palette (dict): 16 key-value pairs related to what the RGB value of a pixel is.
+            dimensions (int): 8 for an 8x8 tile, 16 for a 16x16 tile.
     """
-    def __init__(self, addr, data, palette, dimensions=16):
+    def __init__(self, address, data, palette, dimensions=16):
         """
         Constructs a new :obj:`ColorTile` object.
         """
-        super(ColorTile, self).__init__(addr, data, dimensions)
-        self._palette = palette
-        if self._palette is not None:
-            self._color()
+        super(ColorTile, self).__init__(address, data, dimensions)
+        self.palette = palette
+        if self.palette is not None:
+            self.color()
 
     def __repr__(self):
-        return ' '.join(["ColorTile:", str(self._addr), 'size:', str(self._dims)])
+        return ' '.join(["ColorTile:", str(self.address), 'size:', str(self.dimensions)])
 
     # todo: exception handling for palettes that don't have the correct key(s)
-    def _color(self):
-        tile_iter = iter_unpack('c', self._data)
-        colors = [self._palette[int.from_bytes(i[0], byteorder='big')] for i in tile_iter]
-        self._data = colors
+    def color(self):
+        tile_iter = iter_unpack('c', self.data)
+        colors = [self.palette[int.from_bytes(i[0], byteorder='big')] for i in tile_iter]
+        self.data = colors
 
     def to_array(self):
         """
@@ -42,12 +42,12 @@ class ColorTile(Tile):
         """
         colors = [[], [], []]
 
-        for rgb in self._data:
+        for rgb in self.data:
             colors[0].append(rgb[0])
             colors[1].append(rgb[1])
             colors[2].append(rgb[2])
 
-        arrays = [np.array(c, dtype=np.uint8).reshape((self._dims, self._dims)) for c in colors]
+        arrays = [np.array(c, dtype=np.uint8).reshape((self.dimensions, self.dimensions)) for c in colors]
         colorarr = np.dstack(arrays)
         return colorarr
 
@@ -85,10 +85,10 @@ class ColorTile(Tile):
         Returns:
             a new unpacked :obj:`Tile`.
         """
-        reversed_ = {v : k for k, v in self._palette.items()}
-        stripped = [int(reversed_[d]) for d in self._data]
+        reversed_ = {v : k for k, v in self.palette.items()}
+        stripped = [int(reversed_[d]) for d in self.data]
 
-        return Tile(self._addr, bytes(stripped))
+        return Tile(self.address, bytes(stripped))
 
 def new(address, data, palette, dimensions=16):
     """
@@ -130,7 +130,7 @@ def from_image(image, address):
     if im.mode == 'P':
         return 'Image is in Palette mode'
 
-    tile_data = list(im.getdata())
+    tile_data = list(map(list, im.getdata()))
 
     tile = new(address, tile_data, None, dims)
 

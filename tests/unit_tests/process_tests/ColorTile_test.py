@@ -15,7 +15,6 @@ def test_from_image_colortile(tmpdir_factory, testframe, gfxfile):
 
     fn2 = base.join('colortestpng.png')
     test_tile = ColorTile.from_image(str(fn2), tile.address)
-
     assert tile.data == test_tile.data
 
 # This is broken by palettes that have the same values in them multiple times
