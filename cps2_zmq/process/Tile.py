@@ -1,9 +1,10 @@
 from struct import Struct
 from PIL import Image
 import numpy as np
+from cps2_zmq.process.GraphicAsset import GraphicAsset
 
 # Need to clean this file up
-class Tile(object):
+class Tile(GraphicAsset):
     """
     * Tile is a container for all the good stuff associated with the graphical tiles used by the CPS2
     * Graphical tiles used by the CPS2 are sized 8x8, 16x16, or 32x32 (currently not supported by this project)
