@@ -1,12 +1,13 @@
 """
 Unit tests for MameWorker.py
 """
+import time
 import pytest
 from cps2_zmq.gather import MameWorker
 
 @pytest.fixture(scope="function")
 def test_worker():
-    worker = MameWorker.MameWorker("1", "inproc://toworkers")
+    worker = MameWorker.MameWorker("1", "inproc://toworkers", fct=print)
     yield worker
     worker.cleanup()
 
@@ -23,9 +24,11 @@ def test_run(server, test_worker, messages, expected):
     print("Messages made")
 
     server.start()
+    time.sleep(5)
+    server.close_workers([test_worker])
 
     assert test_worker.msgs_recv == expected
-    
+
 @pytest.mark.parametrize("message, expected", [
     ({'frame_number': 1141, 'sprites': [[420, 69, 300, 1], [1, 1, 1, 1]], 'palettes': [[]]}, 1141),
 ])
@@ -46,5 +49,3 @@ def test_work(message, expected):
     """
     result = MameWorker._work(message)
     assert result == expected
-
-

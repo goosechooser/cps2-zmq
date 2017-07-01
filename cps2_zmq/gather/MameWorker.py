@@ -22,7 +22,7 @@ class MameWorker(Thread):
         Sends requests for work.
         working (bool): Whether the worker is in its main loop or closing.
     """
-    def __init__(self, w_id, socket_addr, context=None):
+    def __init__(self, w_id, socket_addr, fct=None, context=None):
         super(MameWorker, self).__init__()
         self._w_id = bytes(w_id, encoding='UTF-8')
         self._context = context or zmq.Context.instance()
@@ -33,6 +33,7 @@ class MameWorker(Thread):
 
         self._working = True
         self._msgs_recv = 0
+        self.fct = fct or process
 
     @property
     def w_id(self):
@@ -83,16 +84,16 @@ class MameWorker(Thread):
             else:
                 self._msgs_recv += 1
                 unpacked = msgpack.unpackb(message, encoding='utf-8')
-                try:
-                    process(unpacked)
-                except Exception as err:
-                    print(err)
+                # try:
+                self.fct(unpacked)
+                # except Exception as err:
+                    # print(err)
 
         self.cleanup()
-        print('WORKER', self._w_id, 'received', self._msgs_recv, 'messages')
+        # print('WORKER', self._w_id, 'received', self._msgs_recv, 'messages')
 
 def process(message):
-    masked = Sprite.mask_all(message['sprites'])
+    masked = [Sprite.sprite_mask(each) for each in message['sprites']]
     palettes = message['palettes']
     frame_number = message['frame_number']
     # Consider just writing message + masked sprites to file?

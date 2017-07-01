@@ -18,8 +18,15 @@ class MockServer():
         self.backend.close()
 
     def make_messages(self, num):
-        self.messages = [bytes(str(i), encoding='UTF-8') for i in range(num)]
-        self.messages.append(b'END')
+        self.messages = [msgpack.packb(str(i)) for i in range(num)]
+
+    def close_workers(self, workers):
+        empty = b'empty'
+        message = b'END'
+
+        for w in workers:
+            address = w.w_id
+            self.backend.send_multipart([address, empty, message])
 
     def start(self):
         for msg in self.messages:
