@@ -2,9 +2,10 @@ import jsonpickle
 from PIL import Image
 import numpy as np
 
-from cps2_zmq.process import Tile, ColorTile, GraphicAsset
+from cps2_zmq.process import Tile, ColorTile
+from cps2_zmq.process.GraphicAsset import GraphicAsset
 
-class Sprite(GraphicAsset.GraphicAsset):
+class Sprite(GraphicAsset):
     """
     A Sprite is a grouping of :py:mod:`~cps2_zmq.gather.Tile.Tile` that use the same palette.
 
@@ -77,7 +78,7 @@ class Sprite(GraphicAsset.GraphicAsset):
             a list of Tiles.
         """
         return [t.to_tile() if isinstance(t, ColorTile.ColorTile) else t for t in self.tiles]
-        
+
 # todo: exception handling for sizing issues
 def list2d(list_, size):
     """
