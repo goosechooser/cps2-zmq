@@ -191,21 +191,6 @@ def generate_tiles(tile_number, size):
 
     return tiles
 
-def from_file(path):
-    """
-    Returns a Sprite from a json encoded file.
-
-    Args:
-        path (str): path to the json file.
-
-    Returns:
-        a Sprite object
-    """
-    with open(path, 'r') as f:
-        sprite = jsonpickle.decode(f.read())
-
-    return sprite
-
 def from_image(image, sprite):
     """
     Converts a image into a :obj:`Sprite`.
