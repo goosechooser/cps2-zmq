@@ -11,6 +11,14 @@ def test_to_png(testframe, gfxmap):
         sprite.color_tiles(palette)
         sprite.to_png('\\'.join(['frame_img', str(sprite.base_tile)]))
 
+def test_from_json(testframe):
+    sprite = testframe.sprites[0]
+    dict_sprite = sprite.to_json()
+    assert isinstance(dict_sprite, str)
+
+    sprite = Sprite.Sprite.from_json(dict_sprite)
+    assert isinstance(sprite, Sprite.Sprite)
+
 #broken for the same reason ColorTile's 'to_tile' is broken
 @pytest.mark.skip
 def test_to_tile(testframe, gfxfile):
@@ -43,27 +51,11 @@ def test_from_image(tmpdir_factory, testframe, gfxfile):
 
 def test_sprite_mask():
     data = [420, 69, 300, 0]
-    expected = {'tile_number': '0x012c',
-                'priority': 0, 'xflip': 0, 'x': 420,
-                'y': 69, 'eol': 0, 'yflip': 0,
-                'height': 1, 'offset': 0, 'width': 1, 'pal_number': '0'}
-    assert Sprite.sprite_mask(data) == expected
+    expected = {'base_tile': '0x012c', 'priority': 0,
+                'flips': (0, 0), 'location': (356, 53),
+                'size': (1, 1), 'palnum': '0'}
+    result = Sprite.sprite_mask(data)
+    print('sprite mask result', result)
 
-def test_mask_all():
-    data = [[420, 69, 300, 1], [1, 1, 1, 1]]
-    result1 = {'tile_number': '0x012c',
-               'priority': 0, 'xflip': 0, 'x': 420,
-               'y': 69, 'eol': 0, 'yflip': 0,
-               'height': 1, 'offset': 0, 'width': 1, 'pal_number': '1'}
-
-    result2 = {'tile_number': '0x01',
-               'priority': 0, 'xflip': 0, 'x': 1,
-               'y': 1, 'eol': 0, 'yflip': 0,
-               'height': 1, 'offset': 0, 'width': 1, 'pal_number': '1'}
-
-    expected = [result1, result2]
-    results = Sprite.mask_all(data)
-
-    for i, r in enumerate(results):
-        assert r == expected[i]
-        
+    assert  result == expected
+    

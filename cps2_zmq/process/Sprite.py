@@ -2,9 +2,9 @@ import jsonpickle
 from PIL import Image
 import numpy as np
 
-from cps2_zmq.process import Tile, ColorTile
+from cps2_zmq.process import Tile, ColorTile, GraphicAsset
 
-class Sprite(object):
+class Sprite(GraphicAsset.GraphicAsset):
     """
     A Sprite is a grouping of :py:mod:`~cps2_zmq.gather.Tile.Tile` that use the same palette.
 
@@ -105,7 +105,7 @@ class Sprite(object):
             a list of Tiles.
         """
         return [t.to_tile() if isinstance(t, ColorTile.ColorTile) else t for t in self.tiles]
-
+    
     def to_file(self, path):
         """
         Saves the Sprite object as a json encoded file.
@@ -118,8 +118,8 @@ class Sprite(object):
         path = '\\'.join([path, file_name])
 
         with open(path, 'w') as f:
-            f.write(jsonpickle.encode(self))
-
+            f.write(self.to_json())
+    
 # todo: exception handling for sizing issues
 def list2d(list_, size):
     """
@@ -151,15 +151,22 @@ def from_dict(dict_):
         and will need to be filled in. This can be done by calling
         `tile_operations.read_tiles_from_file`
     """
-    palnum = dict_['pal_number']
 
-    tile_number = dict_['tile_number']
-    size = (dict_['width'], dict_['height'])
-    loc = (dict_['x'], dict_['y'])
-    flips = (dict_['xflip'], dict_['yflip'])
-    if dict_['offset'] is 0:
-        loc = (loc[0] - 64, loc[1] - 16)
+    dict_['tiles'] = generate_tiles(dict_['base_tile'], dict_['size'])
 
+    return Sprite(**dict_)
+
+def generate_tiles(tile_number, size):
+    """
+    Fills in the rest of the Tile info for a Sprite.
+
+    Args:
+        tile_number (str): the memory address of the base tile
+        size ((int, int)): the size of the Sprite
+
+    Return:
+        a list of Tile.
+    """
     tiles = []
     for i in range(size[1]):
         for j in range(size[0]):
@@ -167,7 +174,7 @@ def from_dict(dict_):
             addr = hex(int(tile_number, 16) + offset)
             tiles.append(Tile.Tile(addr, None))
 
-    return Sprite(tile_number, tiles, palnum, loc, size, flips, priority=dict_['priority'])
+    return tiles
 
 def from_file(path):
     """
@@ -237,35 +244,34 @@ def sprite_mask(byte_data):
     """
     dict_ = {}
     dict_['priority'] = (byte_data[0] & 0xC000) >> 14
-    dict_['x'] = byte_data[0] & 0x03FF
-    dict_['y'] = byte_data[1] & 0x03FF
-    dict_['eol'] = (byte_data[1] & 0x8000) >> 15
+
+    # dict_['eol'] = (byte_data[1] & 0x8000) >> 15
     #hex: {0:x};  oct: {0:o};  bin: {0:b}".format(42)
     top_half = "{0:#x}".format((byte_data[1] & 0x6000) >> 13)
     bottom_half = "{0:x}".format(byte_data[2])
-    dict_['tile_number'] = ''.join([top_half, bottom_half])
-    dict_['height'] = ((byte_data[3] & 0xF000) >> 12) + 1
-    dict_['width'] = ((byte_data[3] & 0x0F00) >> 8) + 1
+    dict_['base_tile'] = ''.join([top_half, bottom_half])
+    tile_height = ((byte_data[3] & 0xF000) >> 12) + 1
+    tile_width = ((byte_data[3] & 0x0F00) >> 8) + 1
+    dict_['size'] = (tile_width, tile_height)
+
     #(0= Offset by X:-64,Y:-16, 1= No offset)
-    dict_['offset'] = (byte_data[3] & 0x0080) >> 7
+    offset = (byte_data[3] & 0x0080) >> 7
+
+    location_x = byte_data[0] & 0x03FF
+    location_y = byte_data[1] & 0x03FF
+
+    if not offset:
+        location_x -= 64
+        location_y -= 16
+
+    dict_['location'] = (location_x, location_y)
+
     #Y flip, X flip (1= enable, 0= disable)
-    dict_['yflip'] = (byte_data[3] & 0x0040) >> 69
-    dict_['xflip'] = (byte_data[3] & 0x0020) >> 5
-    dict_['pal_number'] = "{0:d}".format(byte_data[3] & 0x001F)
+    flip_x = (byte_data[3] & 0x0040) >> 69
+    flip_y = (byte_data[3] & 0x0020) >> 5
+    dict_['flips'] = (flip_x, flip_y)
+    dict_['palnum'] = "{0:d}".format(byte_data[3] & 0x001F)
     # dict_['mem_addr'] = "{0:x}".format(byte_data[4])
 
     return dict_
-
-def mask_all(sprites):
-    """
-    Calls sprite_mask on every value in the sprites list.
-
-    Args:
-        sprites (:obj:`list` of :obj:`list`): the raw sprite data
-
-    Returns:
-        a list.
-    """
-    masked = [sprite_mask(s) for s in sprites if all(s)]
-    return masked
     

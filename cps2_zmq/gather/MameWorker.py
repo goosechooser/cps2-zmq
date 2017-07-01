@@ -120,7 +120,7 @@ def _process_message(message, logging=False):
     """
     A private method. Where the actual message processing is done.
     """
-    masked = Sprite.mask_all(message['sprites'])
+    masked = [Sprite.sprite_mask(sprite) for sprite in message['sprites']]
     palettes = message['palettes']
 
     # Consider just writing message + masked sprites to file?
