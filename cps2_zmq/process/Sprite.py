@@ -32,14 +32,6 @@ class Sprite(GraphicAsset.GraphicAsset):
         size = " Size: (" + str(self.size[0]) + ", " + str(self.size[1])
         return "Sprite contains tiles: " + str(addrs) + loc + ")" + size + ")"
 
-
-
-    def height(self):
-        return self.size[1]
-
-    def width(self):
-        return self.size[0]
-
     def to_array(self, flip=True):
         """
         Provides contents of Sprite as a numpy array.
