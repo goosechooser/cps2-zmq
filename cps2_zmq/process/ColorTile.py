@@ -85,7 +85,7 @@ class ColorTile(Tile):
         Returns:
             a new unpacked :obj:`Tile`.
         """
-        reversed_ = {v : k for k, v in self.palette.items()}
+        reversed_ = dict((i, v) for i, v in enumerate(self.palette))
         stripped = [int(reversed_[d]) for d in self.data]
 
         return Tile(self.address, bytes(stripped))
