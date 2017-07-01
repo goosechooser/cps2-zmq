@@ -77,21 +77,7 @@ class Sprite(GraphicAsset.GraphicAsset):
             a list of Tiles.
         """
         return [t.to_tile() if isinstance(t, ColorTile.ColorTile) else t for t in self.tiles]
-    
-    def to_file(self, path):
-        """
-        Saves the Sprite object as a json encoded file.
-
-        Args:
-            path (str): The location to save to.
-        """
-        name = '_'.join(['sprite', str(self.base_tile)])
-        file_name = '.'.join([name, 'json'])
-        path = '\\'.join([path, file_name])
-
-        with open(path, 'w') as f:
-            f.write(self.to_json())
-    
+        
 # todo: exception handling for sizing issues
 def list2d(list_, size):
     """
@@ -222,11 +208,10 @@ def from_image(image, sprite):
 
     zipped = zip(cropped_imgs, addresses)
 
-    if im.mode == 'P':
-        tiles = [Tile.new(addr, bytes(img.getdata())) for img, addr in zipped]
-
-    if im.mode == 'RGB':
+    try:
         tiles = [ColorTile.new(addr, list(img.getdata()), None) for img, addr in zipped]
+    except ValueError:
+        tiles = [Tile.new(addr, bytes(img.getdata())) for img, addr in zipped]
 
     new_sprite = sprite
     new_sprite.tiles = tiles
