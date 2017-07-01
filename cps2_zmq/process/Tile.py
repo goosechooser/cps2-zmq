@@ -83,26 +83,6 @@ class Tile(GraphicAsset):
         arr = np.frombuffer(self.data, dtype=np.uint8).reshape((self.dimensions, self.dimensions))
         return arr
 
-    def to_bmp(self, path):
-        """
-        Creates a .bmp image from a single 8x8 or 16x16 tile.
-
-        Args:
-            path (str): the location to save to
-        """
-        image = Image.fromarray(self.to_array(), 'P')
-        image.save(path + ".bmp")
-
-    def to_png(self, path):
-        """
-        Creates a .png image from a single 8x8 or 16x16 tile.
-
-        Args:
-            path (str): the location to save to
-        """
-        image = Image.fromarray(self.to_array(), 'P')
-        image.save(path + ".png")
-
     # unpacking tiles
     @staticmethod
     def _bitplanes_to_tile(data):

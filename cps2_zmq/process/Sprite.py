@@ -32,6 +32,18 @@ class Sprite(GraphicAsset.GraphicAsset):
         size = " Size: (" + str(self.size[0]) + ", " + str(self.size[1])
         return "Sprite contains tiles: " + str(addrs) + loc + ")" + size + ")"
 
+    def color_tiles(self, palette):
+        """
+        Converts any :obj:`Tile` the :obj:`Sprite` has into :obj:`ColorTile`.
+
+        Args:
+            palette (dict): the palette to use.
+        """
+
+        self.tiles = [ColorTile.from_tile(tile, palette)
+                      for tile in self.tiles
+                      if isinstance(tile, Tile.Tile)]
+
     def to_array(self, flip=True):
         """
         Provides contents of Sprite as a numpy array.
@@ -55,38 +67,6 @@ class Sprite(GraphicAsset.GraphicAsset):
             preflip = np.flipud(preflip)
 
         return preflip
-
-    def color_tiles(self, palette):
-        """
-        Converts any :obj:`Tile` the :obj:`Sprite` has into :obj:`ColorTile`.
-
-        Args:
-            palette (dict): the palette to use.
-        """
-
-        self.tiles = [ColorTile.from_tile(tile, palette)
-                      for tile in self.tiles
-                      if isinstance(tile, Tile.Tile)]
-
-    def to_bmp(self, path_to_save):
-        """
-        Creates a .bmp file
-        """
-        try:
-            image = Image.fromarray(self.to_array(), 'RGB')
-        except ValueError:
-            image = Image.fromarray(self.to_array(), 'P')
-        image.save(path_to_save + ".bmp")
-
-    def to_png(self, path_to_save):
-        """
-        Creates a .png file
-        """
-        try:
-            image = Image.fromarray(self.to_array(), 'RGB')
-        except ValueError:
-            image = Image.fromarray(self.to_array(), 'P')
-        image.save(path_to_save + ".png")
 
     def to_tile(self):
         """
