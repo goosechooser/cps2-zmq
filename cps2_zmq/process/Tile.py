@@ -28,8 +28,6 @@ class Tile(GraphicAsset):
     def __repr__(self):
         return ' '.join(["Tile:", str(self.address), 'size:', str(self.dimensions)])
 
-
-
     def unpack(self):
         """
         Unpacks the Tile's data. If its a 16x16 tile, deinterleaves the 8x8 subtiles.
@@ -62,7 +60,6 @@ class Tile(GraphicAsset):
         Args:
             data (:obj:`bytes`): the data to be packed into the Tile
         """
-
         #Need exception handling for packing incorrectly sized data
         tile_fmt = Struct(32 * 'c')
         tile_iter = tile_fmt.iter_unpack(data)
@@ -80,8 +77,10 @@ class Tile(GraphicAsset):
         Returns:
             a numpy.array
         """
-        arr = np.frombuffer(self.data, dtype=np.uint8).reshape((self.dimensions, self.dimensions))
-        return arr
+        arr = np.frombuffer(self.data, dtype=np.uint8)
+        reshape_arr = arr.reshape((self.dimensions, self.dimensions))
+
+        return reshape_arr
 
     # unpacking tiles
     @staticmethod
@@ -193,7 +192,8 @@ class Tile(GraphicAsset):
     # [subtile4-row16] [subtile4-row16]
     @staticmethod
     def _interleave_subtiles(tiledata):
-        """Row interleaves the 4 8x8 subtiles in a 16x16 tile.
+        """
+        Row interleaves the 4 8x8 subtiles in a 16x16 tile.
 
         Returns bytes().
         """
@@ -210,7 +210,8 @@ class Tile(GraphicAsset):
 
     @staticmethod
     def _interleave(subtile1, subtile2):
-        """Interleaves two 8x8 tiles like
+        """
+        Interleaves two 8x8 tiles like
         [subtile1-row1] [subtile2-row1] ...
         [subtile1-row16] [subtile2-row16]
 
@@ -271,7 +272,7 @@ def from_dict(dict_):
         a Tile
     """
 
-    return Tile(dict_['address'], dict_['data'], dict_['dimensions'])
+    return Tile(**dict_)
 
 def from_image(image, address):
     """
