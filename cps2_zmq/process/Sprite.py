@@ -156,6 +156,49 @@ def from_dict(dict_):
 
     return Sprite(**dict_)
 
+
+def sprite_mask(byte_data):
+    """
+    Turns the 8 bytes of raw sprite information into something usable.
+
+    Args:
+        byte_data (:obj:`list`): a list of 4 uint16 containing all the data for a Sprite.
+
+    Returns:
+        a dict. This dict can be used by the Sprite factory method :meth:`fromdict`.
+    """
+    dict_ = {}
+    dict_['priority'] = (byte_data[0] & 0xC000) >> 14
+
+    top_half = "{0:#x}".format((byte_data[1] & 0x6000) >> 13)
+    bottom_half = "{0:x}".format(byte_data[2])
+    dict_['base_tile'] = ''.join([top_half, bottom_half])
+    tile_height = ((byte_data[3] & 0xF000) >> 12) + 1
+    tile_width = ((byte_data[3] & 0x0F00) >> 8) + 1
+    dict_['size'] = (tile_width, tile_height)
+
+    #(0 = Offset by X:-64,Y:-16, 1 = No offset)
+    offset = (byte_data[3] & 0x0080) >> 7
+    location_x = byte_data[0] & 0x03FF
+    location_y = byte_data[1] & 0x03FF
+
+    if not offset:
+        location_x -= 64
+        location_y -= 16
+
+    dict_['location'] = (location_x, location_y)
+    #Y flip, X flip (1= enable, 0= disable)
+    flip_x = (byte_data[3] & 0x0040) >> 69
+    flip_y = (byte_data[3] & 0x0020) >> 5
+    dict_['flips'] = (flip_x, flip_y)
+    dict_['palnum'] = "{0:d}".format(byte_data[3] & 0x001F)
+
+    # Keeping these because maybe I'll need them one day
+    # dict_['eol'] = (byte_data[1] & 0x8000) >> 15
+    # dict_['mem_addr'] = "{0:x}".format(byte_data[4])
+
+    return dict_
+
 def generate_tiles(tile_number, size):
     """
     Fills in the rest of the Tile info for a Sprite.
@@ -231,47 +274,4 @@ def from_image(image, sprite):
     new_sprite = sprite
     new_sprite.tiles = tiles
     return new_sprite
-
-def sprite_mask(byte_data):
-    """
-    Turns the 8 bytes of raw sprite information into something usable.
-
-    Args:
-        byte_data (:obj:`list`): a list of 4 uint16 containing all the data for a Sprite.
-
-    Returns:
-        a dict. This dict can be used by the Sprite factory method :meth:`fromdict`.
-    """
-    dict_ = {}
-    dict_['priority'] = (byte_data[0] & 0xC000) >> 14
-
-    # dict_['eol'] = (byte_data[1] & 0x8000) >> 15
-    #hex: {0:x};  oct: {0:o};  bin: {0:b}".format(42)
-    top_half = "{0:#x}".format((byte_data[1] & 0x6000) >> 13)
-    bottom_half = "{0:x}".format(byte_data[2])
-    dict_['base_tile'] = ''.join([top_half, bottom_half])
-    tile_height = ((byte_data[3] & 0xF000) >> 12) + 1
-    tile_width = ((byte_data[3] & 0x0F00) >> 8) + 1
-    dict_['size'] = (tile_width, tile_height)
-
-    #(0= Offset by X:-64,Y:-16, 1= No offset)
-    offset = (byte_data[3] & 0x0080) >> 7
-
-    location_x = byte_data[0] & 0x03FF
-    location_y = byte_data[1] & 0x03FF
-
-    if not offset:
-        location_x -= 64
-        location_y -= 16
-
-    dict_['location'] = (location_x, location_y)
-
-    #Y flip, X flip (1= enable, 0= disable)
-    flip_x = (byte_data[3] & 0x0040) >> 69
-    flip_y = (byte_data[3] & 0x0020) >> 5
-    dict_['flips'] = (flip_x, flip_y)
-    dict_['palnum'] = "{0:d}".format(byte_data[3] & 0x001F)
-    # dict_['mem_addr'] = "{0:x}".format(byte_data[4])
-
-    return dict_
     
