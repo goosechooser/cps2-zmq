@@ -27,7 +27,7 @@ class Cps2Decoder(json.JSONDecoder):
             module_name = d.pop('__module__')
             module = importlib.import_module(module_name)
             class_ = getattr(module, class_name)
-            args = dict((key, value) for key, value in d.items())
+            args = d
             return class_(**args)
 
         else:
