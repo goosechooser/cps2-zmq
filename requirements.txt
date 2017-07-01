@@ -5,4 +5,4 @@ pyzmq
 msgpack-python
 sphinx
 sphinx_rtd_theme
-travis-sphinxpip 
+travis-sphinx 
