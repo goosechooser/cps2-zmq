@@ -84,15 +84,12 @@ def new(fnumber, sprites, palettes):
         a Frame object
     """
     converted = {}
-    for i, v in enumerate(palettes):
+    for k, v in palettes.items():
         # conv = {kk : _argb_to_rgb(hex(color)[2:]) for kk, color in v.items()}
         conv = [_argb_to_rgb(hex(color)[2:]) for color in v]
-        converted[i] = conv
+        converted[k] = conv
 
     return Frame(fnumber, sprites, converted)
-
-def from_json(d):
-    return json.dumps(d, cls=encoding.Cps2Decoder)
 
 def from_file(path):
     """
@@ -105,7 +102,7 @@ def from_file(path):
         a Frame object
     """
     with open(path, 'r') as f:
-        frame = json.dumps(f.read(), cls=encoding.Cps2Decoder)
+        frame = json.dumps(f.read())
 
     return frame
 

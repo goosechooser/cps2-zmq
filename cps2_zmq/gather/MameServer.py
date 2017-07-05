@@ -1,5 +1,6 @@
 # pylint: disable=E1101
 
+import sys
 import msgpack
 import zmq
 from zmq.eventloop.ioloop import IOLoop
@@ -25,82 +26,79 @@ class MameServer(object):
         workers (list of threads): Pool to keep track of workers.
     """
     def __init__(self, port, toworkers, context=None):
-        self._loop = IOLoop.instance()
-        self._context = context or zmq.Context.instance()
-        self._port = port
+        self.loop = IOLoop.instance()
+        self.context = context or zmq.Context.instance()
+        self.port = port
 
-        self._serversub = self._context.socket(zmq.SUB)
-        self._serversub.bind(':'.join(["tcp://127.0.0.1", str(self._port)]))
-        self._serversub.setsockopt_string(zmq.SUBSCRIBE, '')
+        self.front = self.context.socket(zmq.SUB)
+        self.front.bind(':'.join(["tcp://127.0.0.1", str(self.port)]))
+        self.front.setsockopt_string(zmq.SUBSCRIBE, '')
 
-        self._backend = self._context.socket(zmq.ROUTER)
-        self._backend.bind(toworkers)
+        self.backend = self.context.socket(zmq.ROUTER)
+        self.backend.bind(toworkers)
 
-        self._backstream = ZMQStream(self._backend)
-        self._backstream.on_recv(self.handle_router)
+        self.backstream = ZMQStream(self.backend)
+        self.backstream.on_recv(self.handle_router)
 
         self.msgs_recv = 0
-        self._workers = []
-
-    @property
-    def workers(self):
-        """
-        Property.
-
-        Returns:
-            a :obj:`list of Threads.
-        """
-        return self._workers
-
-    @workers.setter
-    def workers(self, value):
-        self._workers = value
+        self.workers = []
+        self.working = True
 
     def cleanup(self):
         """
         Closes all associated zmq sockets and streams.
         """
-        self._serversub.close()
-        self._backend.close()
-        self._backstream.close()
+        self.front.close()
+        self.backend.close()
+        self.backstream.close()
 
     def start(self):
         """
         Start the server
         """
         print('SERVER Starting')
+        sys.stdout.flush()
 
         for worker in self.workers:
             worker.start()
 
-        self._loop.start()
+        self.loop.start()
 
         self.cleanup()
 
         print('Workers have joined')
+        sys.stdout.flush()
 
-        print("Client Received", self.msgs_recv, "messages")
+        print("Server Received", self.msgs_recv, "messages")
 
     def handle_router(self, msg):
         """
         Callback. Handles replies from workers.
         """
         #Receives req from worker
-        address, empty, ready = msg
+        worker_addr, empty, worker_msg = msg
 
         #gets message from client
-        sub_message = self._serversub.recv_multipart()
-        unpacked = msgpack.unpackb(sub_message[0], encoding='utf-8')
+        if self.working:
+            client_message = self.front.recv()
+            unpacked = msgpack.unpackb(client_message, encoding='utf-8')
+            if unpacked['frame_number'] != 'closing':
+                self.msgs_recv += 1
+                message = msgpack.packb(unpacked)
+                self.backend.send_multipart([worker_addr, empty, message])
 
-        if unpacked['frame_number'] != 'closing':
-            self.msgs_recv += 1
+            else:
+                print('client closing')
+                sys.stdout.flush()
+                close_workers(self.workers, self.backend)
+                self.working = False
 
-            message = msgpack.packb(unpacked)
-            self._backend.send_multipart([address, empty, message])
+        else: 
+            if worker_msg == b'END':
+                self.workers.pop()
 
-        else:
-            close_workers(self._workers, self._backend)
-            self._loop.stop()
+            if not self.workers:
+                self.loop.stop()
 
 def close_workers(workers, socket):
     """
@@ -114,11 +112,11 @@ def close_workers(workers, socket):
     message = b'END'
 
     for worker in workers:
-        address = worker.w_id
+        address = worker.idn
         socket.send_multipart([address, empty, message])
 
 if __name__ == '__main__':
     server = MameServer(5556, "inproc://toworkers")
-    server.workers = [MameWorker(str(num), "inproc://toworkers") for num in range(1, 3)]
+    server.workers = [MameWorker(str(num), "inproc://toworkers", "inproc://none") for num in range(1, 5)]
 
     server.start()

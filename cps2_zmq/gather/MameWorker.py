@@ -36,8 +36,9 @@ class MameWorker(BaseWorker):
         self.back.close()
 
     def process(self, message):
+        # self.report()
         result = process_message(message)
-        packed = msgpack.packb(result)
+        packed = msgpack.packb(result.to_json())
         self.back.send_multipart([b'empty', packed])
 
 def process_message(message):
@@ -45,7 +46,6 @@ def process_message(message):
     palettes = message['palettes']
     frame_number = message['frame_number']
     sprites = [Sprite.from_dict(m) for m in masked]
-
     result = Frame.new(frame_number, sprites, palettes)
     return result
-    
+        

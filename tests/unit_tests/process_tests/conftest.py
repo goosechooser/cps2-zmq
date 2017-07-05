@@ -18,10 +18,6 @@ def testframe():
     return get_frame('tests/test_data/frame_1499.json')
 
 @pytest.fixture(scope='module')
-def testframes():
-    return iter([get_frame('\\'.join(['frame_data_2', f])) for f in os.listdir('frame_data\\')])
-
-@pytest.fixture(scope='module')
 def gfxfile():
     return get_file('data/vm3_combined')
 

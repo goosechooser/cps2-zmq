@@ -1,45 +1,52 @@
 # pylint: disable=E1101
 
+import sys
+import time
+import os
+import os.path
 from threading import Thread
 import pytest
 import zmq
-import pymongo
 import msgpack
+from cps2_zmq.process import Frame
 
+def get_file(fpath):
+    with open(os.path.normpath(fpath), 'r+b') as f:
+        return f.read()
+
+@pytest.fixture(scope='module') 
+def rawframes():
+    data_dir = os.path.normpath('tests/test_data/raw_frame_data/')
+    frames = [get_file(os.path.join(data_dir, f)) for f in sorted(os.listdir(data_dir))]
+    return frames
+
+# Need to refactor this to pull from not mongodb
 class MockMameClient(Thread):
-    def __init__(self, port, collection, context=None):
+    def __init__(self, port, msgs, context=None):
         super(MockMameClient, self).__init__()
         self._context = context or zmq.Context.instance()
         self._publisher = self._context.socket(zmq.PUB)
-        self._publisher.bind(':'.join(["tcp://127.0.0.1", str(port)]))
-        self._msg_limit = 10
-        self._client = pymongo.MongoClient()
-        self._db = self._client[collection]
+        self._publisher.connect(':'.join(["tcp://127.0.0.1", str(port)]))
+        self.msgs = msgs
         self.daemon = True
-
-    @property
-    def msg_limit(self):
-        return self._msg_limit
-
-    @msg_limit.setter
-    def msg_limit(self, value):
-        self._msg_limit = value
-
+    
     def run(self):
-        frames = self._db.frames.find(projection={'_id' : 0}, limit=self.msg_limit)
-        for frame in frames:
-            msg = msgpack.packb(frame, encoding='utf-8')
-            self._publisher.send(msg)
+        time.sleep(5)
+        closing = {'frame_number': 'closing'}
 
-        msg = msgpack.packb({'frame_number' : 'closing'}, encoding='utf-8')
-        self._publisher.send(msg)
+        for frame in self.msgs:
+            data = frame
+            # print(data)
+            # sys.stdout.flush()
+            self._publisher.send(data)
+
+        self._publisher.send(msgpack.packb(closing))
 
     def close(self):
         self._publisher.close()
-        self._client.close()
 
 @pytest.fixture(scope="module")
-def client():
-    client = MockMameClient(5666, 'cps2')
+def client(rawframes):
+    client = MockMameClient(5666, rawframes)
     yield client
     client.close()

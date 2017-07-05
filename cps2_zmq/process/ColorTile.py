@@ -21,8 +21,6 @@ class ColorTile(Tile):
         """
         super(ColorTile, self).__init__(address, data, dimensions)
         self.palette = palette
-        if self.palette is not None:
-            self.color()
 
     def __repr__(self):
         return ' '.join(["ColorTile:", str(self.address), 'size:', str(self.dimensions)])
@@ -110,7 +108,9 @@ def from_tile(tile, palette):
     Returns:
         a :obj:`ColorTile`.
     """
-    return ColorTile(tile.address, tile.data, palette, tile.dimensions)
+    ctile = ColorTile(tile.address, tile.data, palette, tile.dimensions)
+    ctile.color()
+    return ctile
 
 # For now just do image -> ColorTile leaving palette info intact.
 def from_image(image, address):

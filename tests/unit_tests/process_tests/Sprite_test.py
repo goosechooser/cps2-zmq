@@ -1,17 +1,25 @@
+import os
 import pytest
 from cps2_zmq.process import tile_operations, Sprite
 
 # WORKS
 # Not a real test though
-@pytest.mark.skip
-def test_to_png(testframe, gfxmap):
-    for i, sprite in enumerate(testframe.sprites):
-        palette = testframe.palettes[sprite.palnum]
-        testframe.sprites[i].tiles = tile_operations.read_tiles_from_file(gfxmap, sprite.tiles)
-        sprite.color_tiles(palette)
-        sprite.to_png('\\'.join(['frame_img', str(sprite.base_tile)]))
+# @pytest.mark.skip
+def test_to_png(tmpdir_factory, testframe, gfxfile):
+    sprite = testframe.sprites[0]
+    palette = testframe.palettes[sprite.palnum]
 
-def test_from_json(testframe):
+    sprite.tiles = tile_operations.read_tiles_from_file(gfxfile, sprite.tiles)
+    sprite.color_tiles(palette)
+
+    base = tmpdir_factory.mktemp('data')
+    fn = base.join('spritetestpng')
+    sprite.to_png(str(fn))
+
+    fn = base.join('spritetestpng.png')
+    assert os.path.exists(str(fn))
+
+def test_to_and_from_json(testframe):
     sprite = testframe.sprites[0]
     dict_sprite = sprite.to_json()
     assert isinstance(dict_sprite, str)
@@ -47,7 +55,6 @@ def test_from_image(tmpdir_factory, testframe, gfxfile):
 
         for tile1, tile2 in zip(sprite.tiles, test_sprite.tiles):
             assert tile1 == tile2
-
 
 def test_sprite_mask():
     data = [420, 69, 300, 0]

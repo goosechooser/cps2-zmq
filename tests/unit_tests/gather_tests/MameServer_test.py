@@ -23,19 +23,3 @@ def test_close_workers(worker, test_socket):
     close_workers(workers, test_socket)
     for w in workers:
         assert w.frontend.recv_multipart()
-
-@pytest.mark.skip
-@pytest.mark.timeout(timeout=10, method='thread')
-def test_start(client, worker):
-    client.msg_limit = 100
-
-    server = MameServer(5666, "inproc://tomockworkers")
-    client.start()
-    server.start()
-
-    worker.pull_messages()
-
-    assert server.msgs_recv == worker.msgs_recv
-
-
-
