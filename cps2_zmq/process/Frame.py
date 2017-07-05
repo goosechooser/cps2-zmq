@@ -1,4 +1,3 @@
-# import jsonpickle
 import json
 from PIL import Image
 # from cps2_zmq.process import encoding

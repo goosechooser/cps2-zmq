@@ -1,8 +1,8 @@
 .
-jsonpickle
+pymongo
 Pillow
 pyzmq
 msgpack-python
 sphinx
 sphinx_rtd_theme
-travis-sphinx 
+travis-sphinx
