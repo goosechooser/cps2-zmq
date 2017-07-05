@@ -1,9 +1,10 @@
-import jsonpickle
+# import jsonpickle
 import json
 from PIL import Image
-from cps2_zmq.process import encoding
+# from cps2_zmq.process import encoding
+from cps2_zmq.process.GraphicAsset import GraphicAsset
 
-class Frame(object):
+class Frame(GraphicAsset):
     """
     Frame is a container of Sprites. It is related to the frames drawn by the CPS2 hardware.
     Ideally this would provide methods for manipulating sprites en masse.
@@ -25,7 +26,6 @@ class Frame(object):
     def __repr__(self):
         return "Frame {} has {} sprites".format(self.fnumber, len(self.sprites))
 
-
     def add_sprites(self, sprites):
         """
         Add sprites to the Frame's existing sprites.
@@ -34,6 +34,8 @@ class Frame(object):
             sprites (:obj:`list` of :obj:`Sprite.Sprite`): a list of sprites
         """
         self.sprites.extend(sprites)
+    def to_array(self):
+        pass
 
     # Only needs to create a png, doesn't need to color in sprites
     # Issues arise from assuming all the sprites are already colored
@@ -66,8 +68,7 @@ class Frame(object):
         path = '\\'.join([path, file_name])
 
         with open(path, 'w') as f:
-            f.write(json.dumps(self, cls=encoding.Cps2Encoder))
-            # f.write(jsonpickle.encode(self))
+            f.write(self.to_json())
 
 # Factories
 def new(fnumber, sprites, palettes):
@@ -83,12 +84,15 @@ def new(fnumber, sprites, palettes):
         a Frame object
     """
     converted = {}
-    for k, v in palettes.items():
+    for i, v in enumerate(palettes):
         # conv = {kk : _argb_to_rgb(hex(color)[2:]) for kk, color in v.items()}
         conv = [_argb_to_rgb(hex(color)[2:]) for color in v]
-        converted[k] = conv
+        converted[i] = conv
 
     return Frame(fnumber, sprites, converted)
+
+def from_json(d):
+    return json.dumps(d, cls=encoding.Cps2Decoder)
 
 def from_file(path):
     """
@@ -101,7 +105,7 @@ def from_file(path):
         a Frame object
     """
     with open(path, 'r') as f:
-        frame = jsonpickle.decode(f.read())
+        frame = json.dumps(f.read(), cls=encoding.Cps2Decoder)
 
     return frame
 
