@@ -63,7 +63,7 @@ class BaseWorker(Thread):
         """
         Report stats at the end.
         """
-        print(self.__class__.__name__, 'received', self.msgs_recv, 'messages')
+        print(self.__class__.__name__, self.idn, 'received', self.msgs_recv, 'messages')
         sys.stdout.flush() 
 
 
