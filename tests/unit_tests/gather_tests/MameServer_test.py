@@ -13,8 +13,8 @@ def test_socket():
     test_socket.close()
 
 @pytest.mark.timeout(timeout=10, method='thread')
-def test_close_workers(worker, test_socket, monkeypatch):
-    worker.w_id = bytes('1', encoding='UTF-8')
+def test_close_workers(worker, test_socket):
+    worker.idn = bytes('1', encoding='UTF-8')
     workers = [worker]
 
     for w in workers:

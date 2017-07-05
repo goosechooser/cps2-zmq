@@ -25,7 +25,7 @@ class MockServer():
         message = b'END'
 
         for w in workers:
-            address = w.w_id
+            address = w.idn
             self.backend.send_multipart([address, empty, message])
 
     def start(self):
@@ -37,9 +37,9 @@ class MockServer():
             self.backend.send_multipart(multi)
 
 class MockWorker():
-    def __init__(self, wid=None, context=None):
+    def __init__(self, idn=None, context=None):
         self._context = context or zmq.Context.instance()
-        self.w_id = wid
+        self.idn = bytes(idn, encoding='UTF-8')
         self.frontend = self._context.socket(zmq.DEALER)
         self.messages = []
         self.msgs_recv = 0
@@ -141,7 +141,7 @@ def server():
 
 @pytest.fixture(scope="module")
 def worker():
-    worker = MockWorker()
+    worker = MockWorker("1")
     # worker.pull_from("inproc://tomockworkers")
     yield worker
     worker.close()
