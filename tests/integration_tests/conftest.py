@@ -1,24 +1,10 @@
 # pylint: disable=E1101
 
-import sys
 import time
-import os
-import os.path
 from threading import Thread
 import pytest
 import zmq
 import msgpack
-from cps2_zmq.process import Frame
-
-def get_file(fpath):
-    with open(os.path.normpath(fpath), 'r+b') as f:
-        return f.read()
-
-@pytest.fixture(scope='module') 
-def rawframes():
-    data_dir = os.path.normpath('tests/test_data/raw_frame_data/')
-    frames = [get_file(os.path.join(data_dir, f)) for f in sorted(os.listdir(data_dir))]
-    return frames
 
 # Need to refactor this to pull from not mongodb
 class MockMameClient(Thread):
@@ -36,8 +22,6 @@ class MockMameClient(Thread):
 
         for frame in self.msgs:
             data = frame
-            # print(data)
-            # sys.stdout.flush()
             self._publisher.send(data)
 
         self._publisher.send(msgpack.packb(closing))

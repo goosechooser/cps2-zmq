@@ -13,6 +13,9 @@ python:
 install: 
   - pip install -r requirements.txt
 
+services:
+  - mongodb
+
 # command to run tests
 script: 
   - pytest tests/unit_tests
