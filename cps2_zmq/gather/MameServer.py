@@ -1,7 +1,6 @@
 # pylint: disable=E1101
 
 import sys
-import msgpack
 import zmq
 from zmq.eventloop.ioloop import IOLoop
 from zmq.eventloop.zmqstream import ZMQStream
@@ -25,14 +24,14 @@ class MameServer(object):
         msgs_recv (int): Total number of messages received.
         workers (list of threads): Pool to keep track of workers.
     """
-    def __init__(self, port, toworkers, context=None):
+    def __init__(self, port, toworkers):
         self.loop = IOLoop.instance()
-        self.context = context or zmq.Context.instance()
+        self.context = zmq.Context.instance()
         self.port = port
 
-        self.front = self.context.socket(zmq.SUB)
+        self.front = self.context.socket(zmq.ROUTER)
         self.front.bind(':'.join(["tcp://127.0.0.1", str(self.port)]))
-        self.front.setsockopt_string(zmq.SUBSCRIBE, '')
+        # self.front.setsockopt_string(zmq.SUBSCRIBE, '')
 
         self.backend = self.context.socket(zmq.ROUTER)
         self.backend.bind(toworkers)
@@ -80,20 +79,20 @@ class MameServer(object):
 
         #gets message from client
         if self.working:
-            client_message = self.front.recv()
-            unpacked = msgpack.unpackb(client_message, encoding='utf-8')
-            if unpacked['frame_number'] != 'closing':
-                self.msgs_recv += 1
-                message = msgpack.packb(unpacked)
-                self.backend.send_multipart([worker_addr, empty, message])
+            client_addr, _, client_message = self.front.recv_multipart()
 
-            else:
+            # 'closing' msgpacked is length 22
+            # honestly a hack, but i hate unpacking, checking, then repacking
+            if len(client_message) == 22:
                 print('client closing')
                 sys.stdout.flush()
+
                 close_workers(self.workers, self.backend)
                 self.working = False
-
-        else: 
+            else:
+                self.msgs_recv += 1
+                self.backend.send_multipart([worker_addr, empty, client_message])
+        else:
             if worker_msg == b'END':
                 self.workers.pop()
 
@@ -117,6 +116,7 @@ def close_workers(workers, socket):
 
 if __name__ == '__main__':
     server = MameServer(5556, "inproc://toworkers")
-    server.workers = [MameWorker(str(num), "inproc://toworkers", "inproc://none") for num in range(1, 5)]
+    server.workers = [MameWorker(str(num), "inproc://toworkers", "inproc://none") for num in range(2)]
+
 
     server.start()

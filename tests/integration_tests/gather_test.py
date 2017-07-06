@@ -4,6 +4,7 @@ from cps2_zmq.gather.MameWorker import MameWorker
 
 # This is very finnicky
 # Popping workers after they're done means you can't access any stats they collected
+@pytest.mark.timeout(timeout=10, method='thread')
 def test_pipeline(client):
     server = MameServer(5666, "inproc://toworkers")
     workers = [MameWorker(str(num), "inproc://toworkers", "inproc://none") for num in range(1, 3)]

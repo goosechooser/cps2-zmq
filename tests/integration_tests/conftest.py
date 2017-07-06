@@ -1,6 +1,7 @@
 # pylint: disable=E1101
 
 import time
+import random
 from threading import Thread
 import pytest
 import zmq
@@ -11,8 +12,9 @@ class MockMameClient(Thread):
     def __init__(self, port, msgs, context=None):
         super(MockMameClient, self).__init__()
         self._context = context or zmq.Context.instance()
-        self._publisher = self._context.socket(zmq.PUB)
-        self._publisher.connect(':'.join(["tcp://127.0.0.1", str(port)]))
+        self.front = self._context.socket(zmq.DEALER)
+        self.front.connect(':'.join(["tcp://127.0.0.1", str(port)]))
+        self.front.setsockopt(zmq.IDENTITY, bytes(random.randint(10, 69)))
         self.msgs = msgs
         self.daemon = True
     
@@ -21,13 +23,12 @@ class MockMameClient(Thread):
         closing = {'frame_number': 'closing'}
 
         for frame in self.msgs:
-            data = frame
-            self._publisher.send(data)
+            self.front.send_multipart([b'', frame])
 
-        self._publisher.send(msgpack.packb(closing))
+        self.front.send_multipart([b'', msgpack.packb(closing)])
 
     def close(self):
-        self._publisher.close()
+        self.front.close()
 
 @pytest.fixture(scope="module")
 def client(rawframes):

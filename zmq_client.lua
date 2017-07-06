@@ -1,5 +1,3 @@
--- mame uses its own package path and so it doesn't find lzmq.threads for whatever reason??
--- package.path = '.\\?.lua;\\?\\init.lua;C:\\lua-5.3.3\\systree\\share\\lua\\5.3\\?\\init.lua;C:\\lua-5.3.3\\systree\\share\\lua\\5.3\\?.lua;C:\\Program Files (x86)\\LuaRocks\\lua\\'
 local zmq = require("lzmq")
 local mp = require("MessagePack")
 
@@ -17,6 +15,11 @@ local mem = cpu.spaces["program"]
 context = zmq.context()
 zassert = zmq.assert
 mp.set_string('string')
+math.randomseed(os.time())
+
+function randof(num)
+    return math.floor(math.random(0, num-1))
+end
 
 -- Sprite RAM is two 8K SRAMs:
 -- One mapped to 700000-707FFF and the other to 708000-70FFFF
@@ -27,13 +30,13 @@ function read_sprite_ram(start_addr, num_of_entries)
 		offset = (i-1) * 0x8
         -- ideally would just do one read_u64(start_addr + offset) 
         -- but python throws a fit trying to convert it
-        -- local byte0 = mem:read_u16(start_addr + offset)
-		-- local byte1 = mem:read_u16(start_addr + offset + 0x2)
-		-- local byte2 = mem:read_u16(start_addr + offset + 0x4)
-		-- local byte3 = mem:read_u16(start_addr + offset + 0x6)
-        local byte0 = mem:read_u32(start_addr + offset)
-        local byte2 = mem:read_u32(start_addr + offset + 0x4)
-        sprite_ram[i] = {byte0, byte2} 
+        local byte0 = mem:read_u16(start_addr + offset)
+		local byte1 = mem:read_u16(start_addr + offset + 0x2)
+		local byte2 = mem:read_u16(start_addr + offset + 0x4)
+		local byte3 = mem:read_u16(start_addr + offset + 0x6)
+        -- local byte0 = mem:read_u32(start_addr + offset)
+        -- local byte2 = mem:read_u32(start_addr + offset + 0x4)
+        sprite_ram[i] = {byte0, byte1, byte2, byte3} 
 	end
 	return sprite_ram
 end
@@ -59,17 +62,17 @@ function get_palettes(addr)
 	return palettes
 end
 
--- overall we're using a pub-sub model of messaging
--- the instance of MAME is a 'client' that just sends messages
--- doesnt care if the message gets received, drops messages if no subscribers (vaguely like UDP)
 function setup_client()
-    print("setting up publisher client")
-    local publisher, err = context:socket{
-        zmq.PUB,
+    print("setting up dealer client")
+    local dealer, err = context:socket{
+        zmq.DEALER,
         connect = "tcp://127.0.0.1:5556"
     }
-    zassert(publisher, err)
-    return publisher
+
+    local identity = string.format("%04X-%04X", randof(0x10000), randof(0x10000))
+    dealer:set_identity(identity)
+    zassert(dealer, err)
+    return dealer
 end
 
 -- right now it just reads the same area each frame and sends it out (dumb method)
@@ -88,12 +91,11 @@ function send_message()
 
     local message = mp.pack(frame)
 
--- not sure if any benefit could come from using a multi-part messaging scheme
-    publisher:send(message)
+    dealer:send_all({"", message})
 end
 
 -- set up
-publisher = setup_client()
+dealer = setup_client()
 
 -- CALL BACKS
 -- when we close MAME we want to clean up our sockets and zmq context
@@ -107,9 +109,9 @@ emu.register_stop(function()
     }
     
     message = mp.pack(last_msg)
-    publisher:send(message)
+    dealer:send_all({"", message})
 
-    publisher:close()
+    dealer:close()
     context:term()
 end)
 
