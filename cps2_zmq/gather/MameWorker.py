@@ -33,6 +33,7 @@ class MameWorker(BaseWorker):
         Close all sockets.
         """
         super(MameWorker, self).close()
+        self.back.send_multipart([b'empty', b'END'])
         self.back.close()
 
     def process(self, message):

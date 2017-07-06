@@ -5,6 +5,7 @@ import zmq
 from zmq.eventloop.ioloop import IOLoop
 from zmq.eventloop.zmqstream import ZMQStream
 from cps2_zmq.gather.MameWorker import MameWorker
+from cps2_zmq.gather.DBSink import DBSink
 
 class MameServer(object):
     """
@@ -42,6 +43,7 @@ class MameServer(object):
         self.msgs_recv = 0
         self.workers = []
         self.working = True
+        self.sinks = []
 
     def cleanup(self):
         """
@@ -58,8 +60,13 @@ class MameServer(object):
         print('SERVER Starting')
         sys.stdout.flush()
 
+        for sink in self.sinks:
+            sink.start()
+
         for worker in self.workers:
             worker.start()
+
+        
 
         self.loop.start()
 
@@ -86,7 +93,6 @@ class MameServer(object):
             if len(client_message) == 22:
                 print('client closing')
                 sys.stdout.flush()
-
                 close_workers(self.workers, self.backend)
                 self.working = False
             else:
@@ -116,7 +122,7 @@ def close_workers(workers, socket):
 
 if __name__ == '__main__':
     server = MameServer(5556, "inproc://toworkers")
-    server.workers = [MameWorker(str(num), "inproc://toworkers", "inproc://none") for num in range(2)]
-
+    server.workers = [MameWorker(str(num), "inproc://toworkers", "inproc://sink") for num in range(4)]
+    server.sinks = [DBSink(str(1), "inproc://sink", 'cps2_test')]
 
     server.start()
