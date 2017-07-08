@@ -2,6 +2,7 @@
 """
 MameWorker.py
 """
+import random
 import sys
 import msgpack
 import zmq
@@ -41,6 +42,7 @@ class MameWorker(BaseWorker):
         result = process_message(message)
         packed = msgpack.packb(result.to_json())
         self.back.send_multipart([b'empty', packed])
+        self.report()
 
 def process_message(message):
     masked = [Sprite.sprite_mask(each) for each in message['sprites']]
@@ -50,3 +52,6 @@ def process_message(message):
     result = Frame.new(frame_number, sprites, palettes)
     return result
         
+if __name__ == '__main__':
+    worker = MameWorker(str(random.randint(69, 420)), "tcp://127.0.0.1:5557", "inproc://ok")
+    worker.start()
