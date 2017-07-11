@@ -29,10 +29,11 @@ class BaseWorker(object):
     HB_INTERVAL = 1000
     HB_LIVENESS = 3
 
-    def __init__(self, idn, front_addr, context=None):
+    def __init__(self, idn, front_addr, service, context=None):
         # super(BaseWorker, self).__init__()
-        # self.loop = IOLoop.instance()
+        self.loop = IOLoop.instance()
         self.idn = bytes(idn, encoding='UTF-8')
+        self.service = service
         self.front_addr = front_addr
         self.context = context or zmq.Context.instance()
         self.front = self.context.socket(zmq.DEALER)
@@ -45,15 +46,15 @@ class BaseWorker(object):
         self.setup()
 
     def setup(self):
-        self.front.connect(self.front_addr)
-        
-        self.frontstream = ZMQStream(self.front)
+        self.frontstream = ZMQStream(self.front, self.loop)
         self.frontstream.on_recv(self.handle_message)
-        
+        self.frontstream.socket.setsockopt(zmq.LINGER, 0)
+        self.frontstream.connect(self.front_addr)
+
         self.heartbeater = PeriodicCallback(self.beat, self.HB_INTERVAL)
-        self.ready(self.frontstream, self.idn)
+        self.ready(self.frontstream, self.service)
         self.heartbeater.start()
-        
+
     def close(self):
         """
         Closes all sockets.
@@ -63,10 +64,10 @@ class BaseWorker(object):
             self.heartbeater.stop()
             self.heartbeater = None
         
-        # if self.frontstream:
-        self.front.close()
-        self.frontstream.close()
-        self.frontstream = None
+        if self.frontstream:
+            self.front.close()
+            self.frontstream.close()
+            self.frontstream = None
         
         self.report()
 
@@ -78,7 +79,7 @@ class BaseWorker(object):
 
     def handle_message(self, msg):
         self.current_liveness = self.HB_LIVENESS
-        
+
         empty = msg.pop(0)
         protocol = msg.pop(0)
         command = msg.pop(0)
@@ -87,12 +88,8 @@ class BaseWorker(object):
         # sys.stdout.flush()
 
         if command == mdp.DISCONNECT:
-            print('Worker', self.idn, 'Closing ig')
-            sys.stdout.flush()
-            IOLoop.instance().stop()
-            
-            # self.close()
-            # self.report()
+            self.loop.stop()
+            self.close()
 
         if command == mdp.REQUEST:
             client_addr, _, message = msg
@@ -104,15 +101,18 @@ class BaseWorker(object):
                 print('Worker ERROR', self.idn, err)
                 sys.stdout.flush()
                 self.close()
-                self.report()
 
             processed = self.process(unpacked)
             packed = msgpack.packb(processed)
-            self.reply(self.frontstream, client_addr, packed)
+            try:
+                self.reply(self.frontstream, client_addr, packed)
+            except TypeError as err:
+                print(self.__class__.__name__, 'encountered', err)
+                sys.stdout.flush()
 
     def report(self):
         """
-        Report stats at the end.
+        Report stats.
         """
         print(self.__class__.__name__, self.idn, 'received', self.msgs_recv, 'messages')
         sys.stdout.flush() 
@@ -121,13 +121,12 @@ class BaseWorker(object):
         self.heartbeat(self.frontstream)
 
         if self.current_liveness < 0:
-            # lost connection logging
             print('Worker', self.idn, 'LOST CONNECTION')
             sys.stdout.flush()
-            IOLoop.instance().stop()
-            # self.close()
-            # self.report()
+            self.loop.stop()
+            self.close()
 
+            # this would reconnect the worker
             # delayed = DelayedCallback(self.setup, 5000)
             # delayed.start()
 
@@ -146,20 +145,12 @@ class BaseWorker(object):
 
     def heartbeat(self, socket):
         self.current_liveness -= 1
-        # try:
         socket.send_multipart([b'', self._protocol, mdp.HEARTBEAT])
-        # except OSError as err:
-        #     print('Shits fucked in worker', self.idn, err)
 
     def disconnect(self, socket):
         socket.send_multipart([b'', self._protocol, mdp.DISCONNECT])
 
 if __name__ == '__main__':
-    worker = BaseWorker(str(1), "tcp://127.0.0.1:5557", zmq.Context())
-    # worker.start()
-    
-    IOLoop.current().start()
-    print('whats this')
-    worker.close()
-    print('whats that')
-    IOLoop.instance().close(all_fds=True)
+    worker = BaseWorker(str(1), "tcp://127.0.0.1:5557", 'mame')
+    worker.start()
+    # worker.close()

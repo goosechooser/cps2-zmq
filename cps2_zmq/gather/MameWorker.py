@@ -23,26 +23,24 @@ class MameWorker(BaseWorker):
         Sends requests for work.
         working (bool): Whether the worker is in its main loop or closing.
     """
-    def __init__(self, idn, front_addr, back_addr, context=None):
-        super(MameWorker, self).__init__(idn, front_addr, context)
+    # def __init__(self, idn, front_addr, service, context=None):
+    #     super(MameWorker, self).__init__(idn, front_addr, context)
+    #     self.service = b'mame'
+    #     # self.back = self.context.socket(zmq.DEALER)
+    #     # self.back.connect(back_addr)
 
-        self.back = self.context.socket(zmq.DEALER)
-        self.back.connect(back_addr)
+    # def close(self):
+    #     """
+    #     Close all sockets.
+    #     """
+    #     super(MameWorker, self).close()
+    #     # self.back.send_multipart([b'empty', b'END'])
+    #     # self.back.close()
 
-    def close(self):
-        """
-        Close all sockets.
-        """
-        super(MameWorker, self).close()
-        self.back.send_multipart([b'empty', b'END'])
-        self.back.close()
-
-    def process(self, message):
-        # self.report()
-        result = process_message(message)
-        packed = msgpack.packb(result.to_json())
-        self.back.send_multipart([b'empty', packed])
-        self.report()
+    # def process(self, message):
+    #     result = process_message(message)
+    #     packed = msgpack.packb(result.to_json())
+    #     # self.back.send_multipart([b'empty', packed])
 
 def process_message(message):
     masked = [Sprite.sprite_mask(each) for each in message['sprites']]
@@ -53,5 +51,5 @@ def process_message(message):
     return result
         
 if __name__ == '__main__':
-    worker = MameWorker(str(random.randint(69, 420)), "tcp://127.0.0.1:5557", "inproc://ok")
+    worker = MameWorker(str(random.randint(69, 420)), "tcp://127.0.0.1:5557", b'mame')
     worker.start()
