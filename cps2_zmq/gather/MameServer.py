@@ -36,28 +36,23 @@ class MameServer(object):
         self.context = zmq.Context.instance()
 
         self.frontend = self.context.socket(zmq.ROUTER)
-        self.frontend.bind(front_addr)
-        self.frontstream = None
-        
+
+        self.frontstream = ZMQStream(self.frontend)
+        self.frontstream.on_recv(self.handle_frontend)
+        self.frontstream.bind(front_addr)
+
         self.backend = self.context.socket(zmq.ROUTER)
-        self.backend.bind(toworkers)
-        self.backstream = None
+
+        self.backstream = ZMQStream(self.backend)
+        self.backstream.on_recv(self.handle_backend)
+        self.backstream.bind(toworkers)
 
         self.msgs_recv = 0
         self.workers = {}
         self.services = {}
         self.heartbeater = None
-        self.setup()
 
     def setup(self):
-        self.frontstream = ZMQStream(self.frontend)
-        self.frontstream.on_recv(self.handle_frontend)
-        self.frontstream.socket.setsockopt(zmq.LINGER, 0)
-
-        self.backstream = ZMQStream(self.backend)
-        self.backstream.on_recv(self.handle_backend)
-        self.backstream.socket.setsockopt(zmq.LINGER, 0)
-
         self.heartbeater = PeriodicCallback(self.beat, HB_INTERVAL)
         self.heartbeater.start()
 
@@ -65,9 +60,9 @@ class MameServer(object):
         """
         Closes all associated zmq sockets and streams.
         """
+        self.frontstream.socket.setsockopt(zmq.LINGER, 0)
         self.frontstream.on_recv(None)
         if self.frontend:
-            # self.frontend.setsockopt(zmq.LINGER, 0)
             self.frontend.close()
             self.frontend = None
 
@@ -75,9 +70,9 @@ class MameServer(object):
             self.frontstream.close()
             self.frontstream = None
 
+        self.backstream.socket.setsockopt(zmq.LINGER, 0)
         self.backstream.on_recv(None)
         if self.backend:
-            # self.backend.setsockopt(zmq.LINGER, 0)
             self.backend.close()
             self.backend = None
 
@@ -92,7 +87,7 @@ class MameServer(object):
         self.workers = {}
         self.services = {}
         self.loop.stop()
-        
+
 
     def start(self):
         """
@@ -100,19 +95,19 @@ class MameServer(object):
         """
         print('SERVER Starting')
         sys.stdout.flush()
-        
+        self.setup()
         self.loop.start()
 
         print('Workers have joined')
         sys.stdout.flush()
 
         print("Server Received", self.msgs_recv, "messages")
-    
+
     def beat(self):
         """
         Checks for dead workers and removes them.
         """
-        for w in self.workers.values():
+        for w in list(self.workers.values()):
             if not w.is_alive():
                 self.unregister_worker(w.idn)
 
@@ -134,7 +129,7 @@ class MameServer(object):
                 q = ServiceQueue()
                 q.put(idn)
                 self.services[service] = (q, [])
-    
+
     def unregister_worker(self, idn):
         print('Unregistering worker', idn)
         sys.stdout.flush()
@@ -168,7 +163,7 @@ class MameServer(object):
             for w in list(self.workers):
                 self.disconnect_worker(w, self.backend)
             self.loop.stop()
-            
+
         else:
             try:
                 wq, wr = self.services[service]
@@ -214,7 +209,7 @@ class MameServer(object):
 
         elif command == mdp.DISCONNECT:
             self.unregister_worker(worker_idn)
-        
+
         else:
             self.disconnect_worker(worker_idn, self.backstream)
 
@@ -262,7 +257,7 @@ class ServiceQueue(object):
             self.q.remove(idn)
         except ValueError:
             pass
-        
+
     def put(self, idn, *args, **kwargs):
         if idn not in self.q:
             self.q.append(idn)
@@ -279,10 +274,10 @@ if __name__ == '__main__':
 
     # front_addr = ':'.join(["tcp://127.0.0.1:5556", str(5556)])
     server = MameServer("tcp://127.0.0.1:5556", "tcp://127.0.0.1:5557")
-    # num = 1
-    # workers = [MameWorker(str(num), "tcp://127.0.0.1:5557", b'mame')] # for num in range(1)]
-    # for w in workers:
-    #     w.start()
+    num = 1
+    workers = [MameWorker(str(num), "tcp://127.0.0.1:5557", b'mame')] # for num in range(1)]
+    for w in workers:
+        w.start()
 
     server.start()
     server.shutdown()

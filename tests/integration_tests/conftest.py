@@ -14,18 +14,22 @@ class MockMameClient(Thread):
         self._context = context or zmq.Context.instance()
         self.front = self._context.socket(zmq.DEALER)
         self.front.connect(':'.join(["tcp://127.0.0.1", str(port)]))
-        self.front.setsockopt(zmq.IDENTITY, bytes(random.randint(10, 69)))
+        self.front.setsockopt(zmq.IDENTITY, b'\x69')
         self.msgs = msgs
         self.daemon = True
     
     def run(self):
         time.sleep(5)
-        closing = {'frame_number': 'closing'}
+        # closing = {'frame_number': 'closing'}
 
-        for frame in self.msgs:
-            self.front.send_multipart([b'', frame])
+        for frame in self.msgs[:20]:
+            self.request(b'mame', frame)
+        
+        time.sleep(2)
+        self.request(b'disconnect', b'MENSA')
 
-        self.front.send_multipart([b'', msgpack.packb(closing)])
+    def request(self, service, message):
+        self.front.send_multipart([b'', b'MDPC01', service, message])
 
     def close(self):
         self.front.close()

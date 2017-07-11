@@ -5,6 +5,7 @@ import time
 import pytest
 from cps2_zmq.gather import MameWorker
 
+@pytest.mark.skip
 @pytest.mark.parametrize("message, expected", [
     ({'frame_number': 1141, 'sprites': [[420, 69, 300, 1], [1, 1, 1, 1]],
     'palettes': {"1": [0x69, 0x420]}}, 1141),
