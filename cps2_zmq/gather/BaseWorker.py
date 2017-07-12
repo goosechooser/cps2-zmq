@@ -20,7 +20,7 @@ class BaseWorker(object):
         of messages it sends to the server.
         context (:obj:`zmq.Context`): required by ZMQ to make the magic happen.
         The other side of the socket is usually bound by a MameServer.
-        loop (IOLoop): 
+        loop (IOLoop):
         socket_addr (str): The address to connect the frontend socket to. This is usually set
         front (:obj:`zmq.Context.socket`): Requests for work are sent out from here. \
         Work is received on here.
@@ -28,29 +28,30 @@ class BaseWorker(object):
     """
     HB_INTERVAL = 1000
     HB_LIVENESS = 3
+    msgs_recv = 0
 
-    def __init__(self, idn, front_addr, service, context=None):
-        # super(BaseWorker, self).__init__()
-        self.loop = IOLoop.instance()
+    def __init__(self, idn, front_addr, service):
         self.idn = bytes(idn, encoding='UTF-8')
         self.service = service
-        self.front_addr = front_addr
-        self.context = context or zmq.Context.instance()
-        self.front = self.context.socket(zmq.DEALER)
-        self.front.setsockopt(zmq.IDENTITY, self.idn)
-        self.frontstream = None
-        self.msgs_recv = 0
+
+        context = zmq.Context.instance()
+        front = context.socket(zmq.DEALER)
+        front.setsockopt(zmq.IDENTITY, self.idn)
+        front.setsockopt(zmq.LINGER, 0)
+        self.frontstream = ZMQStream(front, IOLoop.instance())
+        self.frontstream.on_recv(self.handle_message)
+        self.frontstream.connect(front_addr)
+
         self.heartbeater = None
         self.current_liveness = 3
         self._protocol = b'MDPW01'
+
         self.setup()
 
     def setup(self):
-        self.frontstream = ZMQStream(self.front, self.loop)
-        self.frontstream.on_recv(self.handle_message)
-        self.frontstream.socket.setsockopt(zmq.LINGER, 0)
-        self.frontstream.connect(self.front_addr)
-
+        """
+        Sets up the heartbeat callback.
+        """
         self.heartbeater = PeriodicCallback(self.beat, self.HB_INTERVAL)
         self.ready(self.frontstream, self.service)
         self.heartbeater.start()
@@ -63,32 +64,35 @@ class BaseWorker(object):
         if self.heartbeater:
             self.heartbeater.stop()
             self.heartbeater = None
-        
+
         if self.frontstream:
-            self.front.close()
+            self.frontstream.socket.close()
             self.frontstream.close()
             self.frontstream = None
-        
+
         self.report()
 
         print('Closing')
         sys.stdout.flush()
-    
+
     def start(self):
-        self.loop.start()
+        """
+        Starts the worker.
+        """
+        IOLoop.instance().start()
 
     def handle_message(self, msg):
+        """
+        A callback. Handles message when it is received.
+        """
         self.current_liveness = self.HB_LIVENESS
 
         empty = msg.pop(0)
         protocol = msg.pop(0)
         command = msg.pop(0)
 
-        # print('Worker', self.idn, 'got command', command)
-        # sys.stdout.flush()
-
         if command == mdp.DISCONNECT:
-            self.loop.stop()
+            IOLoop.instance().stop()
             self.close()
 
         if command == mdp.REQUEST:
@@ -115,15 +119,18 @@ class BaseWorker(object):
         Report stats.
         """
         print(self.__class__.__name__, self.idn, 'received', self.msgs_recv, 'messages')
-        sys.stdout.flush() 
+        sys.stdout.flush()
 
     def beat(self):
+        """
+        A callback. Sends heartbeat and checks if worker has lost connection.
+        """
         self.heartbeat(self.frontstream)
 
         if self.current_liveness < 0:
             print('Worker', self.idn, 'LOST CONNECTION')
             sys.stdout.flush()
-            self.loop.stop()
+            IOLoop.instance().stop()
             self.close()
 
             # this would reconnect the worker
@@ -137,20 +144,31 @@ class BaseWorker(object):
         return message
 
     def ready(self, socket, service):
+        """
+        Helper function. Ready message is sent once upon connection to the server.
+        """
         self.current_liveness = self.HB_LIVENESS
         socket.send_multipart([b'', self._protocol, mdp.READY, service])
 
     def reply(self, socket, client_addr, message):
+        """
+        Helper function. Sent upon completion of work.
+        """
         socket.send_multipart([b'', self._protocol, mdp.REPLY, client_addr, b'', message])
 
     def heartbeat(self, socket):
+        """
+        Helper function. Sent periodically.
+        """
         self.current_liveness -= 1
         socket.send_multipart([b'', self._protocol, mdp.HEARTBEAT])
 
     def disconnect(self, socket):
+        """
+        Helper function.
+        """
         socket.send_multipart([b'', self._protocol, mdp.DISCONNECT])
 
 if __name__ == '__main__':
-    worker = BaseWorker(str(1), "tcp://127.0.0.1:5557", 'mame')
+    worker = BaseWorker(str(1), "tcp://127.0.0.1:5557", b'mame')
     worker.start()
-    # worker.close()

@@ -32,12 +32,11 @@ def test_handle_message(worker):
 
     assert worker.heartbeater == None
     assert worker.frontstream == None
-    
-def test_ready(worker, socket):
-    
-    worker.ready(worker.front, service)
 
+def test_ready(worker, socket):
+    worker.ready(worker.frontstream.socket, service)
     result = socket.recv_multipart()
+
     assert result.pop(0) == worker.idn
     assert result.pop(0) == empty
     assert result.pop(0) == worker._protocol
@@ -48,9 +47,9 @@ def test_ready(worker, socket):
 def test_reply(worker, socket):
     client_addr = b'client'
     message = b'test message'
-    worker.reply(worker.front, client_addr, message)
-
+    worker.reply(worker.frontstream.socket, client_addr, message)
     result = socket.recv_multipart()
+
     assert result.pop(0) == worker.idn
     assert result.pop(0) == empty
     assert result.pop(0) == worker._protocol
@@ -60,11 +59,11 @@ def test_reply(worker, socket):
     assert result.pop(0) == message
 
 def test_heartbeat(worker, socket):
-    worker.ready(worker.front, service)
+    worker.ready(worker.frontstream.socket, service)
     socket.recv_multipart()
-
-    worker.heartbeat(worker.front)
+    worker.heartbeat(worker.frontstream.socket)
     result = socket.recv_multipart()
+
     assert result.pop(0) == worker.idn
     assert result.pop(0) == empty
     assert result.pop(0) == worker._protocol
@@ -72,9 +71,9 @@ def test_heartbeat(worker, socket):
     assert worker.current_liveness == worker.HB_LIVENESS - 1
 
 def test_disconnect(worker, socket):
-    worker.disconnect(worker.front)
-
+    worker.disconnect(worker.frontstream.socket)
     result = socket.recv_multipart()
+
     assert result.pop(0) == worker.idn
     assert result.pop(0) == empty
     assert result.pop(0) == worker._protocol
