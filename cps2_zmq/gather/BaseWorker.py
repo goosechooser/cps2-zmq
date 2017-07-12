@@ -79,6 +79,8 @@ class BaseWorker(object):
         """
         Starts the worker.
         """
+        print('Worker', self.idn, 'connecting')
+        sys.stdout.flush()
         IOLoop.instance().start()
 
     def handle_message(self, msg):
@@ -92,10 +94,14 @@ class BaseWorker(object):
         command = msg.pop(0)
 
         if command == mdp.DISCONNECT:
+            print('Worker', self.idn, 'received disconnect command')
+            sys.stdout.flush()
             IOLoop.instance().stop()
-            self.close()
+            # self.close()
 
         if command == mdp.REQUEST:
+            print('Worker', self.idn, 'received request command')
+            sys.stdout.flush()
             client_addr, _, message = msg
             self.msgs_recv += 1
 
@@ -104,15 +110,20 @@ class BaseWorker(object):
             except msgpack.exceptions.UnpackValueError as err:
                 print('Worker ERROR', self.idn, err)
                 sys.stdout.flush()
-                self.close()
+                IOLoop.instance().stop()
+                # self.close()
 
             processed = self.process(unpacked)
             packed = msgpack.packb(processed)
+
             try:
                 self.reply(self.frontstream, client_addr, packed)
             except TypeError as err:
                 print(self.__class__.__name__, 'encountered', err)
                 sys.stdout.flush()
+
+            print('Worker', self.idn, 'sent reply')
+            sys.stdout.flush()
 
     def report(self):
         """
@@ -131,7 +142,7 @@ class BaseWorker(object):
             print('Worker', self.idn, 'LOST CONNECTION')
             sys.stdout.flush()
             IOLoop.instance().stop()
-            self.close()
+            # self.close()
 
             # this would reconnect the worker
             # delayed = DelayedCallback(self.setup, 5000)
@@ -154,7 +165,10 @@ class BaseWorker(object):
         """
         Helper function. Sent upon completion of work.
         """
-        socket.send_multipart([b'', self._protocol, mdp.REPLY, client_addr, b'', message])
+        reply_msg = [b'', self._protocol, mdp.REPLY, client_addr, b'', message]
+        print("reply message", reply_msg)
+        sys.stdout.flush()
+        socket.send_multipart(reply_msg)
 
     def heartbeat(self, socket):
         """
@@ -172,3 +186,4 @@ class BaseWorker(object):
 if __name__ == '__main__':
     worker = BaseWorker(str(1), "tcp://127.0.0.1:5557", b'mame')
     worker.start()
+    worker.close()

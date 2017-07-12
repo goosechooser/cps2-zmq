@@ -1,5 +1,6 @@
 # pylint: disable=E1101
 
+import sys
 import time
 import random
 from threading import Thread
@@ -17,15 +18,17 @@ class MockMameClient(Thread):
         self.front.setsockopt(zmq.IDENTITY, b'\x69')
         self.msgs = msgs
         self.daemon = True
-    
-    def run(self):
-        time.sleep(5)
-        # closing = {'frame_number': 'closing'}
 
-        for frame in self.msgs[:20]:
-            self.request(b'mame', frame)
+    def run(self):
+        print('Client sending frames')
+        sys.stdout.flush()
         
-        time.sleep(2)
+        for frame in self.msgs:
+            self.request(b'mame', frame)
+
+        time.sleep(5)
+        print('Client disconnecting')
+        sys.stdout.flush()
         self.request(b'disconnect', b'MENSA')
 
     def request(self, service, message):

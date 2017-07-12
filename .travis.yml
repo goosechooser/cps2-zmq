@@ -8,18 +8,18 @@ python:
   # - "3.6-dev" # 3.6 development branch
   # - "3.7-dev" # 3.7 development branch
   # - "nightly" # currently points to 3.7-dev
-  
+
 # command to install dependencies
-install: 
+install:
   - pip install -r requirements.txt
 
 services:
   - mongodb
 
 # command to run tests
-script: 
-  - pytest tests/unit_tests
+script:
+  - pytest tests
   - travis-sphinx build
 
-after_success: 
+after_success:
   - travis-sphinx deploy

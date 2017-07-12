@@ -26,9 +26,14 @@ def socket():
     test_socket.close()
 
 # only tests disconnect case atm
-def test_handle_message(worker):
-    test_msg = [b'', b'MDPW01', mdp.DISCONNECT]
-    worker.handle_message(test_msg)
+# def test_handle_message(worker):
+#     test_msg = [b'', b'MDPW01', mdp.DISCONNECT]
+#     worker.handle_message(test_msg)
+
+
+
+def test_close(worker):
+    worker.close()
 
     assert worker.heartbeater == None
     assert worker.frontstream == None

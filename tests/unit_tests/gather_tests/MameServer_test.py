@@ -8,7 +8,6 @@ from cps2_zmq.gather import mdp
 port = 6668
 front_addr = ':'.join(["tcp://127.0.0.1", str(port)])
 back_addr = ':'.join(["tcp://127.0.0.1", str(port + 1)])
-test_addr = ':'.join(["tcp://127.0.0.1", str(port + 2)])
 
 worker_idn = bytes(str(1), encoding='UTF-8')
 empty = b''
@@ -19,14 +18,6 @@ def server():
     server = MameServer.MameServer(front_addr, back_addr)
     yield server
     server.shutdown()
-
-@pytest.fixture(scope="function")
-def bound_socket():
-    context = zmq.Context.instance()
-    bound_socket = context.socket(zmq.ROUTER)
-    bound_socket.bind(test_addr)
-    yield bound_socket
-    bound_socket.close()
 
 @pytest.fixture(scope="function")
 def socket():

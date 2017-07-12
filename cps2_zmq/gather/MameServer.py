@@ -88,7 +88,7 @@ class MameServer(object):
         print('SERVER Starting')
         sys.stdout.flush()
         self.setup()
-        self.loop.start()
+        IOLoop.instance().start()
 
         print('Workers have joined')
         sys.stdout.flush()
@@ -112,7 +112,7 @@ class MameServer(object):
             idn (bytes): the id of the worker.
             service (byte-string): the service the work does work for.
         """
-        print('Registering worker', idn)
+        print(self.__class__.__name__, 'Registering worker', idn)
         sys.stdout.flush()
 
         if idn not in self.workers:
@@ -137,7 +137,7 @@ class MameServer(object):
         Args:
             idn (bytes): the id of the worker
         """
-        print('Unregistering worker', idn)
+        print(self.__class__.__name__, 'Unregistering worker', idn)
         sys.stdout.flush()
         self.workers[idn].shutdown()
 
@@ -172,15 +172,16 @@ class MameServer(object):
         protocol = msg.pop(0)
         service = msg.pop(0)
         request = msg[0]
-        self.msgs_recv += 1
 
         if service == b'disconnect':
+            # Need to determine how many packets are lost doing this.
             print('Client closing. Server disconnecting workers')
             for w in list(self.workers):
-                self.disconnect_worker(w, self.backend)
-            self.loop.stop()
+                self.disconnect_worker(w, self.backstream.socket)
+            IOLoop.instance().stop()
 
         else:
+            self.msgs_recv += 1
             try:
                 wq, wr = self.services[service]
                 idn = wq.get()
