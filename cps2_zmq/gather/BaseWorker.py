@@ -4,7 +4,6 @@ BaseWorker.py
 """
 
 import sys
-# from threading import Thread
 import msgpack
 import zmq
 from zmq.eventloop.zmqstream import ZMQStream
@@ -33,15 +32,8 @@ class BaseWorker(object):
     def __init__(self, idn, front_addr, service):
         self.idn = bytes(idn, encoding='UTF-8')
         self.service = service
-
-        context = zmq.Context.instance()
-        front = context.socket(zmq.DEALER)
-        front.setsockopt(zmq.IDENTITY, self.idn)
-        front.setsockopt(zmq.LINGER, 0)
-        self.frontstream = ZMQStream(front, IOLoop.instance())
-        self.frontstream.on_recv(self.handle_message)
-        self.frontstream.connect(front_addr)
-
+        self.front_addr = front_addr
+        self.frontstream = None
         self.heartbeater = None
         self.current_liveness = 3
         self._protocol = b'MDPW01'
@@ -50,16 +42,29 @@ class BaseWorker(object):
 
     def setup(self):
         """
-        Sets up the heartbeat callback.
+        Sets up the stream and the heartbeat callback.
         """
+        print(self.__class__.__name__, self.idn, 'setting up')
+        sys.stdout.flush()
+
+        context = zmq.Context.instance()
+        front = context.socket(zmq.DEALER)
+        front.setsockopt(zmq.IDENTITY, self.idn)
+        front.setsockopt(zmq.LINGER, 0)
+        self.frontstream = ZMQStream(front, IOLoop.instance())
+        self.frontstream.on_recv(self.handle_message)
+        self.frontstream.connect(self.front_addr)
+
         self.heartbeater = PeriodicCallback(self.beat, self.HB_INTERVAL)
         self.ready(self.frontstream, self.service)
         self.heartbeater.start()
 
     def close(self):
         """
-        Closes all sockets.
+        Closes all sockets and the heartbeat callback.
         """
+        print(self.__class__.__name__, self.idn, 'closing')
+        sys.stdout.flush()
 
         if self.heartbeater:
             self.heartbeater.stop()
@@ -70,16 +75,11 @@ class BaseWorker(object):
             self.frontstream.close()
             self.frontstream = None
 
-        self.report()
-
-        print('Closing')
-        sys.stdout.flush()
-
     def start(self):
         """
         Starts the worker.
         """
-        print('Worker', self.idn, 'connecting')
+        print(self.__class__.__name__, self.idn, 'starting')
         sys.stdout.flush()
         IOLoop.instance().start()
 
@@ -94,13 +94,13 @@ class BaseWorker(object):
         command = msg.pop(0)
 
         if command == mdp.DISCONNECT:
-            print('Worker', self.idn, 'received disconnect command')
+            print(self.__class__.__name__, self.idn,'received disconnect command')
             sys.stdout.flush()
             IOLoop.instance().stop()
             # self.close()
 
         if command == mdp.REQUEST:
-            print('Worker', self.idn, 'received request command')
+            print(self.__class__.__name__, self.idn, 'received request command')
             sys.stdout.flush()
             client_addr, _, message = msg
             self.msgs_recv += 1
@@ -139,7 +139,7 @@ class BaseWorker(object):
         self.heartbeat(self.frontstream)
 
         if self.current_liveness < 0:
-            print('Worker', self.idn, 'LOST CONNECTION')
+            print(self.__class__.__name__, self.idn, 'lost connection')
             sys.stdout.flush()
             IOLoop.instance().stop()
             # self.close()
@@ -187,3 +187,4 @@ if __name__ == '__main__':
     worker = BaseWorker(str(1), "tcp://127.0.0.1:5557", b'mame')
     worker.start()
     worker.close()
+    worker.report()

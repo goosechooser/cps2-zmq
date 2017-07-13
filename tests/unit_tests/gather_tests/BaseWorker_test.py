@@ -12,12 +12,6 @@ empty = b''
 service = b'mame'
 
 @pytest.fixture(scope='function')
-def worker():
-    w = BaseWorker(str(1), addr, b'base')
-    yield w
-    w.close()
-
-@pytest.fixture(scope="function")
 def socket():
     context = zmq.Context.instance()
     test_socket = context.socket(zmq.ROUTER)
@@ -25,12 +19,11 @@ def socket():
     yield test_socket
     test_socket.close()
 
-# only tests disconnect case atm
-# def test_handle_message(worker):
-#     test_msg = [b'', b'MDPW01', mdp.DISCONNECT]
-#     worker.handle_message(test_msg)
-
-
+@pytest.fixture(scope='function')
+def worker():
+    w = BaseWorker(str(1), addr, b'base')
+    yield w
+    w.close()
 
 def test_close(worker):
     worker.close()
