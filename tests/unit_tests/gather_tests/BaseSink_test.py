@@ -24,8 +24,3 @@ def test_setup(sink):
 def test_close(sink):
     sink.close()
     assert sink.substream == None
-
-def test_handle_message(sink):
-    test_msg = [empty, sink._protocol, mdp.READY]
-    with pytest.raises(mdp.UnsupportedCommandException):
-        sink.handle_message(test_msg)

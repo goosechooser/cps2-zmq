@@ -20,11 +20,10 @@ from cps2_zmq.gather.BaseWorker import BaseWorker
 def test_pipeline(client):
     server = MameServer("tcp://127.0.0.1:5666", "tcp://127.0.0.1:5557")
     workers = [MameWorker(str(num), "tcp://127.0.0.1:5557", b'mame') for num in range(2)]
-    # for w in workers:
-    #     w.start()
 
     client.start()
     server.start()
+    
     # love too test nonblocking code
     time.sleep(5)
     server.shutdown()
