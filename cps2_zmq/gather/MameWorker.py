@@ -52,17 +52,22 @@ class MameWorker(BaseWorker):
             self.publish.send_multipart(message)
 
     def process(self, message):
-        """
-        Processes raw frame data sent by a MAME instance.
-        """
-        masked = [Sprite.sprite_mask(each) for each in message['sprites']]
-        palettes = message['palettes']
-        frame_number = message['frame_number']
-        sprites = [Sprite.from_dict(m) for m in masked]
-        result = Frame.new(frame_number, sprites, palettes)
-        self.log_result(result.to_json())
+        processed = process_message(message)
+        json_msg = processed.to_json()
+        self.log_result(json_msg)
+        return json_msg
 
-        return result.to_json()
+def process_message(message):
+    """
+    Processes raw frame data sent by a MAME instance.
+    """
+    masked = [Sprite.sprite_mask(each) for each in message['sprites']]
+    palettes = message['palettes']
+    frame_number = message['frame_number']
+    sprites = [Sprite.from_dict(m) for m in masked]
+    result = Frame.new(frame_number, sprites, palettes)
+
+    return result
 
 
 if __name__ == '__main__':
