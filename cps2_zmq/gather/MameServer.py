@@ -35,6 +35,7 @@ class MameServer(object):
     def __init__(self, front_addr, toworkers):
         loop = IOLoop.instance()
         context = zmq.Context.instance()
+        self.front_addr = front_addr
 
         front = context.socket(zmq.ROUTER)
         front.setsockopt(zmq.LINGER, 0)
@@ -52,6 +53,7 @@ class MameServer(object):
         self.workers = {}
         self.services = {}
         self.heartbeater = None
+        self.msgreport = None
 
     def setup(self):
         """
@@ -59,6 +61,8 @@ class MameServer(object):
         """
         self.heartbeater = PeriodicCallback(self.beat, HB_INTERVAL)
         self.heartbeater.start()
+        self.msgreport = PeriodicCallback(self.report, 10 * HB_INTERVAL)
+        self.msgreport.start()
 
     def shutdown(self):
         """
@@ -78,6 +82,10 @@ class MameServer(object):
             self.heartbeater.stop()
             self.heartbeater = None
 
+        if self.msgreport:
+            self.msgreport.stop()
+            self.msgreport = None
+
         self.workers = {}
         self.services = {}
 
@@ -85,7 +93,7 @@ class MameServer(object):
         """
         Start the server
         """
-        print('SERVER Starting')
+        print('SERVER Starting at address', self.front_addr)
         sys.stdout.flush()
         self.setup()
         IOLoop.instance().start()
@@ -93,7 +101,9 @@ class MameServer(object):
         print('Workers have joined')
         sys.stdout.flush()
 
-        print("Server Received", self.msgs_recv, "messages")
+    def report(self):
+        print(self.__class__.__name__, "received", self.msgs_recv, "messages")
+        sys.stdout.flush()
 
     def beat(self):
         """
@@ -171,11 +181,13 @@ class MameServer(object):
         empty = msg.pop(0)
         protocol = msg.pop(0)
         service = msg.pop(0)
+        service = service.decode('utf-8')
         request = msg[0]
 
-        if service == b'disconnect':
+        if service == 'disconnect':
             # Need to determine how many packets are lost doing this.
             print('Client closing. Server disconnecting workers')
+            print(list(self.workers))
             for w in list(self.workers):
                 self.disconnect_worker(w, self.backstream.socket)
             IOLoop.instance().stop()
@@ -205,7 +217,7 @@ class MameServer(object):
         command = msg.pop(0)
 
         if command == mdp.READY:
-            self.register_worker(worker_idn, msg.pop())
+            self.register_worker(worker_idn, msg.pop().decode('utf-8'))
 
         elif command == mdp.REPLY:
             client_addr, _, message = msg
@@ -218,8 +230,8 @@ class MameServer(object):
                     msg = wr.pop(0)
                     self.send_request(self.backstream, worker_idn, client_addr, msg)
 
-            except KeyError:
-                print('Received', service)
+            except KeyError as err:
+                print('Received', err)
                 sys.stdout.flush()
 
         elif command == mdp.HEARTBEAT:
@@ -332,3 +344,4 @@ if __name__ == '__main__':
     server = MameServer("tcp://127.0.0.1:5556", "tcp://127.0.0.1:5557")
     server.start()
     server.shutdown()
+    server.report()
