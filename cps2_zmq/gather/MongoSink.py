@@ -16,6 +16,7 @@ class MongoSink(BaseSink):
     """
     def __init__(self, idn, front_addr, service, sub_addr, topics, db):
         self.client = None
+        self.coll = topics
         self.db = db
         super(MongoSink, self).__init__(idn, front_addr, service, sub_addr, topics)
 
@@ -43,10 +44,9 @@ class MongoSink(BaseSink):
         super(MongoSink, self).close()
 
     def process_pub(self, message):
-        coll = 'test_frames'
         try:
             json_ = json.loads(message)
-            self.db[coll].insert_one(json_)
+            self.db[self.coll].insert_one(json_)
         except Exception as err:
             print(err)
             sys.stdout.flush()

@@ -29,7 +29,6 @@ def db():
 
 def test_process_pub(sink, db):
     message = json.dumps({'test': 'message'})
-    coll = 'test_frames'
     sink.process_pub(message)
 
-    assert db.coll.find_one()
+    assert db[sink.topics].find_one()
