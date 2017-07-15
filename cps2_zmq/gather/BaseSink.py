@@ -32,6 +32,7 @@ class BaseSink(BaseWorker):
         self.substream.on_recv(self.handle_pub)
         self.substream.bind(self.sub_addr)
 
+
     def close(self):
         """
         Closes all sockets and the heartbeat callback.
@@ -46,6 +47,9 @@ class BaseSink(BaseWorker):
         """
         A callback. Should only handle disconnect.
         """
+        self.current_liveness = self.HB_LIVENESS
+
+
         empty = msg.pop(0)
         protocol = msg.pop(0)
         command = msg.pop(0)
@@ -56,9 +60,10 @@ class BaseSink(BaseWorker):
             IOLoop.instance().stop()
 
         else:
-            print('Error', self.__class__.__name__, self.idn, 'received', command, 'command')
-            sys.stdout.flush()
-            raise mdp.UnsupportedCommandException(command)
+            pass
+            # print('Error', self.__class__.__name__, self.idn, 'received', command, 'command')
+            # sys.stdout.flush()
+            # raise mdp.UnsupportedCommandException(command)
 
     def handle_pub(self, msg):
         """
@@ -84,5 +89,6 @@ class BaseSink(BaseWorker):
         return msg
 
 if __name__ == '__main__':
-    sink = BaseSink("sink-1", "tcp://127.0.0.1:5557", 'logging', "inproc://none", "ok")
+    sink = BaseSink("sink-1", "tcp://127.0.0.1:5557", b'logging', "tcp://127.0.0.1:5558", "frame")
+    sink.start()
     sink.close()
