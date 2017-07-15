@@ -99,30 +99,38 @@ class BaseWorker(object):
             IOLoop.instance().stop()
             # self.close()
 
-        if command == mdp.REQUEST:
-            print(self.__class__.__name__, self.idn, 'received request command')
+        elif command == mdp.REQUEST:
+            # print(self.__class__.__name__, self.idn, 'received request command')
+            # sys.stdout.flush()
+            self.handle_request(msg)
+
+        else:
+            # print('Error', self.__class__.__name__, self.idn, 'received', command, 'command')
+            # sys.stdout.flush()
+            # raise mdp.UnsupportedCommandException(command)
+            pass
+
+    def handle_request(self, msg):
+        # print(self.__class__.__name__, self.idn, 'received request command')
+        # sys.stdout.flush()
+        client_addr, _, message = msg
+        self.msgs_recv += 1
+
+        try:
+            unpacked = msgpack.unpackb(message, encoding='utf-8')
+        except msgpack.exceptions.UnpackValueError as err:
+            print('Worker ERROR', self.idn, err)
             sys.stdout.flush()
-            client_addr, _, message = msg
-            self.msgs_recv += 1
+            IOLoop.instance().stop()
+            # self.close()
 
-            try:
-                unpacked = msgpack.unpackb(message, encoding='utf-8')
-            except msgpack.exceptions.UnpackValueError as err:
-                print('Worker ERROR', self.idn, err)
-                sys.stdout.flush()
-                IOLoop.instance().stop()
-                # self.close()
+        processed = self.process(unpacked)
+        packed = msgpack.packb(processed)
 
-            processed = self.process(unpacked)
-            packed = msgpack.packb(processed)
-
-            try:
-                self.reply(self.frontstream, client_addr, packed)
-            except TypeError as err:
-                print(self.__class__.__name__, 'encountered', err)
-                sys.stdout.flush()
-
-            print('Worker', self.idn, 'sent reply')
+        try:
+            self.reply(self.frontstream, client_addr, packed)
+        except TypeError as err:
+            print(self.__class__.__name__, 'encountered', err)
             sys.stdout.flush()
 
     def report(self):
@@ -142,7 +150,6 @@ class BaseWorker(object):
             print(self.__class__.__name__, self.idn, 'lost connection')
             sys.stdout.flush()
             IOLoop.instance().stop()
-            # self.close()
 
             # this would reconnect the worker
             # delayed = DelayedCallback(self.setup, 5000)
@@ -166,8 +173,6 @@ class BaseWorker(object):
         Helper function. Sent upon completion of work.
         """
         reply_msg = [b'', self._protocol, mdp.REPLY, client_addr, b'', message]
-        print("reply message", reply_msg)
-        sys.stdout.flush()
         socket.send_multipart(reply_msg)
 
     def heartbeat(self, socket):
