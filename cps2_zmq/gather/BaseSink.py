@@ -4,8 +4,6 @@ BaseSink.py
 """
 
 import sys
-import json
-import msgpack
 import zmq
 from zmq.eventloop.zmqstream import ZMQStream
 from zmq.eventloop.ioloop import IOLoop
@@ -16,22 +14,23 @@ class BaseSink(BaseWorker):
     """
     Base class for sinks that will take care of logging-related duties?
     """
-    def __init__(self, idn, front_addr, service, sub_addr, topics):
+    def __init__(self, idn, front_addr, sub_addr, topics):
         self.sub_addr = sub_addr
         self.substream = None
         self.topics = topics
-        super(BaseSink, self).__init__(idn, front_addr, service)
+        super(BaseSink, self).__init__(idn, front_addr, b'sink')
 
     def setup(self):
         super(BaseSink, self).setup()
         context = zmq.Context.instance()
         sub = context.socket(zmq.SUB)
-        sub.setsockopt_string(zmq.SUBSCRIBE, self.topics)
-        sub.setsockopt(zmq.LINGER, 0)
+
+        for topic in self.topics:
+            sub.setsockopt_string(zmq.SUBSCRIBE, topic)
+
         self.substream = ZMQStream(sub, IOLoop.instance())
         self.substream.on_recv(self.handle_pub)
         self.substream.bind(self.sub_addr)
-
 
     def close(self):
         """
@@ -48,7 +47,6 @@ class BaseSink(BaseWorker):
         A callback. Should only handle disconnect.
         """
         self.current_liveness = self.HB_LIVENESS
-
 
         empty = msg.pop(0)
         protocol = msg.pop(0)
@@ -70,25 +68,22 @@ class BaseSink(BaseWorker):
         Figure out extent to which this'll be overridden.
         """
         self.msgs_recv += 1
+        print(msg)
+        sys.stdout.flush()
+
         topic = msg.pop(0)
-        pub_addr = msg.pop(0)
         message = msg.pop()
 
-        try:
-            unpacked = msgpack.unpackb(message, encoding='utf-8')
-        except msgpack.exceptions.UnpackValueError as err:
-            print(self.__class__.__name__, self.idn, err)
-            sys.stdout.flush()
-        else:
-            self.process_pub(unpacked)
+        self.process_pub(message)
 
     def process_pub(self, msg):
         """
         Should be overridden.
         """
+        print(msg)
         return msg
 
 if __name__ == '__main__':
-    sink = BaseSink("sink-1", "tcp://127.0.0.1:5557", b'logging', "tcp://127.0.0.1:5558", "frame")
+    sink = BaseSink("sink-1", "tcp://127.0.0.1:5557", "tcp://127.0.0.1:5558", [''])
     sink.start()
     sink.close()
