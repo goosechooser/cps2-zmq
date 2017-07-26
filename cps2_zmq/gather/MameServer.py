@@ -1,6 +1,6 @@
 # pylint: disable=E1101
 """
-Contains MameServer, WorkerRepresentative, and ServiceQueue classes.
+MameServer.py
 """
 import sys
 import zmq

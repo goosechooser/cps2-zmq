@@ -1,6 +1,6 @@
 # pylint: disable=E1101
 """
-Contains Broker.py
+Contains Broker, WorkerRepresentative, and ServiceQueue classes.
 """
 import sys
 import zmq
