@@ -52,3 +52,4 @@ if __name__ == '__main__':
     worker = MameWorker(str(random.randint(69, 420)), "tcp://127.0.0.1:5557", b'mame', pub_addr="tcp://127.0.0.1:5558")
     worker.start()
     worker.report()
+    worker.close()
