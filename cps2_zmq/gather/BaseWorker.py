@@ -2,13 +2,22 @@
 """
 BaseWorker.py
 """
-
-import sys
+import queue
+import logging
+import logging.config
 import msgpack
 import zmq
+from zmq.log.handlers import PUBHandler
 from zmq.eventloop.zmqstream import ZMQStream
 from zmq.eventloop.ioloop import IOLoop, DelayedCallback, PeriodicCallback
-from cps2_zmq.gather import mdp
+from cps2_zmq.gather import mdp, log
+
+# Have to set up log handling to be done in another thread.
+# This is because the IOLoop will block, and logs won't print to the console.
+log.configure()
+q = queue.Queue(-1)
+qh = logging.handlers.QueueHandler(q)
+listener = logging.handlers.QueueListener(q, *logging.getLogger().handlers)
 
 class BaseWorker(object):
     """
@@ -27,26 +36,25 @@ class BaseWorker(object):
     """
     HB_INTERVAL = 1000
     HB_LIVENESS = 3
-    msgs_recv = 0
 
-    def __init__(self, idn, front_addr, service):
+    def __init__(self, idn, front_addr, service, pub_addr=None):
         self.idn = bytes(idn, encoding='UTF-8')
         self.service = service
         self.front_addr = front_addr
         self.frontstream = None
         self.heartbeater = None
+        self.pub_addr = pub_addr
+        self.publish = None
         self.current_liveness = 3
+        self.msgs_recv = 0
         self._protocol = b'MDPW01'
-
+        self.logger = logging.getLogger(self.__class__.__name__)
         self.setup()
 
     def setup(self):
         """
-        Sets up the stream and the heartbeat callback.
+        Sets up networking and the heartbeat callback.
         """
-        print(self.__class__.__name__, self.idn, 'setting up')
-        sys.stdout.flush()
-
         context = zmq.Context.instance()
         front = context.socket(zmq.DEALER)
         front.setsockopt(zmq.IDENTITY, self.idn)
@@ -55,16 +63,41 @@ class BaseWorker(object):
         self.frontstream.on_recv(self.handle_message)
         self.frontstream.connect(self.front_addr)
 
+        if self.pub_addr:
+            self.publish = context.socket(zmq.PUB)
+            self.publish.setsockopt(zmq.LINGER, 0)
+            self.publish.connect(self.pub_addr)
+
+            ph = PUBHandler(self.publish)
+            ph.root_topic = '.'.join([self.__class__.__name__, str(self.idn, encoding='utf-8')])
+            ph.setLevel(logging.INFO)
+            self.logger.addHandler(ph)
+
         self.heartbeater = PeriodicCallback(self.beat, self.HB_INTERVAL)
         self.ready(self.frontstream, self.service)
         self.heartbeater.start()
+
+        listener.start()
+        self.logger.debug('Setting worker up')
+
+    # def setup_logging(self):
+    #     if self.pub_addr:
+            # ph = PUBHandler(self.publish)
+            # # root_topic = '.'.join([self.__class__.__name__, str(self.idn, encoding='utf-8')])
+            # # ph.root_topic = root_topic
+            # ph.setLevel(logging.INFO)
+            # logging.addHandler(ph)
 
     def close(self):
         """
         Closes all sockets and the heartbeat callback.
         """
-        print(self.__class__.__name__, self.idn, 'closing')
-        sys.stdout.flush()
+        self.logger.debug('Closing')
+        listener.stop()
+
+        if self.publish:
+            self.publish.close()
+            self.publish = None
 
         if self.heartbeater:
             self.heartbeater.stop()
@@ -79,8 +112,7 @@ class BaseWorker(object):
         """
         Starts the worker.
         """
-        print(self.__class__.__name__, self.idn, 'starting')
-        sys.stdout.flush()
+        self.logger.debug('Starting')
         IOLoop.instance().start()
 
     def handle_message(self, msg):
@@ -94,14 +126,12 @@ class BaseWorker(object):
         command = msg.pop(0)
 
         if command == mdp.DISCONNECT:
-            print(self.__class__.__name__, self.idn,'received disconnect command')
-            sys.stdout.flush()
+            self.logger.info('Received disconnect command')
             IOLoop.instance().stop()
             # self.close()
 
         elif command == mdp.REQUEST:
-            # print(self.__class__.__name__, self.idn, 'received request command')
-            # sys.stdout.flush()
+            self.logger.info('Received request command')
             self.handle_request(msg)
 
         else:
@@ -111,34 +141,31 @@ class BaseWorker(object):
             pass
 
     def handle_request(self, msg):
-        # print(self.__class__.__name__, self.idn, 'received request command')
-        # sys.stdout.flush()
+        """
+        Callback. Handles a work request.
+        """
         client_addr, _, message = msg
         self.msgs_recv += 1
 
         try:
             unpacked = msgpack.unpackb(message, encoding='utf-8')
-        except msgpack.exceptions.UnpackValueError as err:
-            print('Worker ERROR', self.idn, err)
-            sys.stdout.flush()
+        except msgpack.exceptions.UnpackValueError:
+            self.logger.error('Failed to unpack', exc_info=True)
             IOLoop.instance().stop()
-            # self.close()
 
         processed = self.process(unpacked)
         packed = msgpack.packb(processed)
 
         try:
             self.reply(self.frontstream, client_addr, packed)
-        except TypeError as err:
-            print(self.__class__.__name__, 'encountered', err)
-            sys.stdout.flush()
+        except TypeError:
+            self.logger.error('encountered error', exc_info=True)
 
     def report(self):
         """
         Report stats.
         """
-        print(self.__class__.__name__, self.idn, 'received', self.msgs_recv, 'messages')
-        sys.stdout.flush()
+        self.logger.info('Received %s messages total', self.msgs_recv)
 
     def beat(self):
         """
@@ -147,8 +174,7 @@ class BaseWorker(object):
         self.heartbeat(self.frontstream)
 
         if self.current_liveness < 0:
-            print(self.__class__.__name__, self.idn, 'lost connection')
-            sys.stdout.flush()
+            self.logger.warning('Lost connection')
             IOLoop.instance().stop()
 
             # this would reconnect the worker
@@ -166,6 +192,7 @@ class BaseWorker(object):
         Helper function. Ready message is sent once upon connection to the server.
         """
         self.current_liveness = self.HB_LIVENESS
+        self.logger.debug('sending ready')
         socket.send_multipart([b'', self._protocol, mdp.READY, service])
 
     def reply(self, socket, client_addr, message):
@@ -173,6 +200,7 @@ class BaseWorker(object):
         Helper function. Sent upon completion of work.
         """
         reply_msg = [b'', self._protocol, mdp.REPLY, client_addr, b'', message]
+        self.logger.debug('sending reply')
         socket.send_multipart(reply_msg)
 
     def heartbeat(self, socket):
@@ -180,16 +208,18 @@ class BaseWorker(object):
         Helper function. Sent periodically.
         """
         self.current_liveness -= 1
+        self.logger.debug('sending heartbeat')
         socket.send_multipart([b'', self._protocol, mdp.HEARTBEAT])
 
     def disconnect(self, socket):
         """
         Helper function.
         """
+        self.logger.debug('sending disconnect')
         socket.send_multipart([b'', self._protocol, mdp.DISCONNECT])
 
 if __name__ == '__main__':
     worker = BaseWorker(str(1), "tcp://127.0.0.1:5557", b'mame')
     worker.start()
-    worker.close()
     worker.report()
+    worker.close()
