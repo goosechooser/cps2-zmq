@@ -5,6 +5,7 @@ BaseSink.py
 
 import sys
 import json
+import msgpack
 import zmq
 import pymongo
 from pymongo.errors import ConnectionFailure
@@ -14,11 +15,11 @@ class MongoSink(BaseSink):
     """
     Uploads to a mongodb.
     """
-    def __init__(self, idn, front_addr, service, sub_addr, topics, db):
+    def __init__(self, idn, front_addr, sub_addr, topics, db):
         self.client = None
         self.coll = topics
         self.db = db
-        super(MongoSink, self).__init__(idn, front_addr, service, sub_addr, topics)
+        super(MongoSink, self).__init__(idn, front_addr, sub_addr, topics)
 
     def conn_db(self):
         self.client = pymongo.MongoClient()
@@ -45,14 +46,16 @@ class MongoSink(BaseSink):
 
     def process_pub(self, message):
         try:
-            json_ = json.loads(message)
-            self.db[self.coll].insert_one(json_)
-        except Exception as err:
-            print(err)
+            unpacked = msgpack.unpackb(message, encoding='utf-8')
+        except msgpack.exceptions.UnpackValueError as err:
+            print(self.__class__.__name__, self.idn, err)
             sys.stdout.flush()
+        else:
+            json_ = json.loads(unpacked)
+            self.db[self.coll].insert_one(json_)
 
 if __name__ == '__main__':
-    sink = MongoSink("sink-1", "tcp://127.0.0.1:5557", b'logging', "tcp://127.0.0.1:5558", "frame", "cps2")
+    sink = MongoSink("sink-1", "tcp://127.0.0.1:5557", "tcp://127.0.0.1:5558", "frame", "cps2")
     sink.start()
     sink.close()
     sink.report()

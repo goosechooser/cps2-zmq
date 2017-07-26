@@ -10,11 +10,10 @@ addr = ':'.join(["tcp://127.0.0.1", str(port)])
 sub_addr = ':'.join(["tcp://127.0.0.1", str(port + 1)])
 
 empty = b''
-service = b'logging'
 
 @pytest.fixture(scope='function')
 def sink():
-    s = BaseSink(idn, addr, service, sub_addr, "mongodb")
+    s = BaseSink(idn, addr, sub_addr, "mongodb")
     yield s
     s.close()
 
