@@ -2,24 +2,25 @@
 """
 BaseSink.py
 """
-
-import logging
 from cps2_zmq.gather.BaseSink import BaseSink
 
+# Filters/Handlers/Loggers would do bulk of work here
 class LogSink(BaseSink):
     def handle_pub(self, msg):
         """
         Figure out extent to which this'll be overridden.
         """
         self.msgs_recv += 1
-        print(msg)
+        self.logger.info('Received message %s', msg)
+
         topic = msg.pop(0).decode('utf-8')
         log = msg.pop().decode('utf-8')
 
+        self.logger.info('topic %s', topic)
+        self.logger.info('message %s', log)
+
         topic_split = self.handle_topic(topic)
         print('topic_split', topic_split)
-        # if topic_split[-1] == 'WARN':
-            # pass
 
         self.handle_log(log)
 
@@ -32,4 +33,5 @@ class LogSink(BaseSink):
 if __name__ == '__main__':
     sink = LogSink("logsink-1", "tcp://127.0.0.1:5557", "tcp://127.0.0.1:5558", [''])
     sink.start()
+    sink.report()
     sink.close()
