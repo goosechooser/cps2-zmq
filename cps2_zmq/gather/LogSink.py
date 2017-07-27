@@ -31,7 +31,7 @@ class LogSink(BaseSink):
         print('handle_log', log)
 
 if __name__ == '__main__':
-    sink = LogSink("1", "tcp://127.0.0.1:5557", "tcp://127.0.0.1:5558", ['MameWorker'])
+    sink = LogSink("1", "tcp://127.0.0.1:5557", "tcp://127.0.0.1:5558", ['MameWorker'], log_to_file=True)
     sink.start()
     sink.report()
     sink.close()

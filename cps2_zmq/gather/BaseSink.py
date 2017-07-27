@@ -14,11 +14,11 @@ class BaseSink(BaseWorker):
     """
     Base class for sinks that will take care of logging-related duties?
     """
-    def __init__(self, idn, front_addr, sub_addr, topics):
+    def __init__(self, idn, front_addr, sub_addr, topics, log_to_file=False):
         self.sub_addr = sub_addr
         self.substream = None
         self.topics = topics
-        super(BaseSink, self).__init__(idn, front_addr, b'sink')
+        super(BaseSink, self).__init__(idn, front_addr, b'sink', log_to_file=log_to_file)
 
     def setup(self):
         super(BaseSink, self).setup()
@@ -26,6 +26,7 @@ class BaseSink(BaseWorker):
         sub = context.socket(zmq.SUB)
 
         for topic in self.topics:
+            self._logger.info('Subscribing to topic %s', topic)
             sub.setsockopt_string(zmq.SUBSCRIBE, topic)
 
         self.substream = ZMQStream(sub, IOLoop.instance())
@@ -84,6 +85,6 @@ class BaseSink(BaseWorker):
         return msg
 
 if __name__ == '__main__':
-    sink = BaseSink("1", "tcp://127.0.0.1:5557", "tcp://127.0.0.1:5558", [''])
+    sink = BaseSink("1", "tcp://127.0.0.1:5557", "tcp://127.0.0.1:5558", [''], log_to_file=True)
     sink.start()
     sink.close()
