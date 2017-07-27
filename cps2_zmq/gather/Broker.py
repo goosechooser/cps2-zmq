@@ -3,10 +3,11 @@
 Contains Broker, WorkerRepresentative, and ServiceQueue classes.
 """
 import sys
+import logging
 import zmq
 from zmq.eventloop.zmqstream import ZMQStream
 from zmq.eventloop.ioloop import IOLoop, PeriodicCallback
-from cps2_zmq.gather import mdp
+from cps2_zmq.gather import mdp, log
 
 HB_INTERVAL = 1000
 HB_LIVENESS = 3
@@ -32,7 +33,7 @@ class Broker(object):
     WPROTOCOL = b'MDPW01'
     msgs_recv = 0
 
-    def __init__(self, front_addr, toworkers):
+    def __init__(self, front_addr, toworkers, log_to_file=False):
         loop = IOLoop.instance()
         context = zmq.Context.instance()
         self.front_addr = front_addr
@@ -49,10 +50,13 @@ class Broker(object):
         self.backstream = ZMQStream(back, loop)
         self.backstream.on_recv(self.handle_backend)
         self.backstream.bind(toworkers)
+        self._logger = None
 
         self.workers = {}
         self.services = {}
         self.heartbeater = None
+
+        self.setup_logging(log_to_file)
 
     def setup(self):
         """
@@ -61,10 +65,16 @@ class Broker(object):
         self.heartbeater = PeriodicCallback(self.beat, HB_INTERVAL)
         self.heartbeater.start()
 
+    def setup_logging(self, log_to_file):
+        name = self.__class__.__name__
+        self._logger = log.configure(name, fhandler=log_to_file)
+
     def shutdown(self):
         """
         Closes all associated zmq sockets and streams.
         """
+        self._logger.info('Closing\n')
+
         if self.frontstream:
             self.frontstream.socket.close()
             self.frontstream.close()
@@ -86,14 +96,12 @@ class Broker(object):
         """
         Start the server
         """
-        print(self.__class__.__name__, 'starting at address', self.front_addr)
-        sys.stdout.flush()
+        self._logger.info('Starting at address %s', self.front_addr)
         self.setup()
         IOLoop.instance().start()
 
     def report(self):
-        print(self.__class__.__name__, "received", self.msgs_recv, "messages")
-        sys.stdout.flush()
+        self._logger.info('Received %s messages', self.msgs_recv)
 
     def beat(self):
         """
@@ -112,20 +120,16 @@ class Broker(object):
             idn (bytes): the id of the worker.
             service (byte-string): the service the work does work for.
         """
-        print(self.__class__.__name__, 'Registering worker', idn)
-        sys.stdout.flush()
+        self._logger.info('Registering worker %s', idn)
 
         if idn not in self.workers:
             self.workers[idn] = WorkerRepresentative(self.WPROTOCOL, idn, service, self.backstream)
 
             if service in self.services:
-                print(service, 'in self.services')
-                sys.stdout.flush()
                 wq, wr = self.services[service]
                 wq.put(idn)
             else:
-                print(service, 'not in self.services')
-                sys.stdout.flush()
+                self._logger.info('Adding %s to services', service)
                 q = ServiceQueue()
                 q.put(idn)
                 self.services[service] = (q, [])
@@ -137,8 +141,7 @@ class Broker(object):
         Args:
             idn (bytes): the id of the worker
         """
-        print(self.__class__.__name__, 'Unregistering worker', idn)
-        sys.stdout.flush()
+        self._logger.info('Unregistering worker %s', idn)
         self.workers[idn].shutdown()
 
         service = self.workers[idn].service
@@ -159,8 +162,9 @@ class Broker(object):
         try:
             socket.send_multipart([idn, b'', self.WPROTOCOL, mdp.DISCONNECT])
         except TypeError as err:
-            print(self.__class__.__name__, 'encountered', err)
-            sys.stdout.flush()
+            self._logger.error('Encountered error', exc_info=True)
+
+        self._logger.info('Disconnecting worker %s', idn)
         self.unregister_worker(idn)
 
     def handle_frontend(self, msg):
@@ -176,8 +180,8 @@ class Broker(object):
 
         if service == 'disconnect':
             # Need to determine how many packets are lost doing this.
-            print('Client closing. Server disconnecting workers')
-            print(list(self.workers))
+            self._logger.info('Received disconnect command. Server disconnecting workers')
+
             for w in list(self.workers):
                 self.disconnect_worker(w, self.backstream.socket)
             IOLoop.instance().stop()
@@ -194,8 +198,7 @@ class Broker(object):
                     wr.append(request)
 
             except KeyError:
-                print('Received', service)
-                sys.stdout.flush()
+                self._logger.error('Encountered error with service %s', service, exc_info=True)
 
     def handle_backend(self, msg):
         """
@@ -221,8 +224,7 @@ class Broker(object):
                     self.send_request(self.backstream, worker_idn, client_addr, msg)
 
             except KeyError as err:
-                print('Received', err)
-                sys.stdout.flush()
+                self._logger.error('Encountered error with service %s', service, exc_info=True)
 
         elif command == mdp.HEARTBEAT:
             worker = self.workers[worker_idn]

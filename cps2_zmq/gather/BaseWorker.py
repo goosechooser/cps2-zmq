@@ -2,7 +2,7 @@
 """
 BaseWorker.py
 """
-import queue
+import random
 import logging
 import logging.config
 import msgpack
@@ -11,10 +11,6 @@ from zmq.log.handlers import PUBHandler
 from zmq.eventloop.zmqstream import ZMQStream
 from zmq.eventloop.ioloop import IOLoop, DelayedCallback, PeriodicCallback
 from cps2_zmq.gather import mdp, log
-
-# Have to set up log handling to be done in another thread.
-# This is because the IOLoop will block, and logs won't print to the console.
-# Alternatively, since end goal will be to run workers headless, who needs the console view?
 
 class BaseWorker(object):
     """
@@ -34,7 +30,7 @@ class BaseWorker(object):
     HB_INTERVAL = 1000
     HB_LIVENESS = 3
 
-    def __init__(self, idn, front_addr, service, pub_addr=None):
+    def __init__(self, idn, front_addr, service, pub_addr=None, log_to_file=False):
         self.idn = bytes(idn, encoding='UTF-8')
         self.service = service
         self.front_addr = front_addr
@@ -46,14 +42,16 @@ class BaseWorker(object):
         self.msgs_recv = 0
         self._protocol = b'MDPW01'
         self._logger = None
+
+        self.setup_logging(log_to_file)
         self.setup()
 
     def setup(self):
         """
         Sets up networking and the heartbeat callback.
         """
-        self.setup_logging()
         self._logger.info('Setting worker up')
+        # logging.info('Setting worker up')
 
         context = zmq.Context.instance()
         front = context.socket(zmq.DEALER)
@@ -78,24 +76,15 @@ class BaseWorker(object):
         self.ready(self.frontstream, self.service)
         self.heartbeater.start()
 
-    def setup_logging(self):
-        log.configure_worker(self)
+    def setup_logging(self, log_to_file):
         name = '.'.join([self.__class__.__name__, str(self.idn, encoding='utf-8')])
-        self._logger = logging.getLogger(name)
-        # self._logger.setLevel(logging.DEBUG)
-
-        # q = queue.Queue(-1)
-        # qh = logging.handlers.QueueHandler(q)
-        # listener = logging.handlers.QueueListener(q, *logging.getLogger().handlers)
-
-        # listener.start()
+        self._logger = log.configure(name, fhandler=log_to_file)
 
     def close(self):
         """
         Closes all sockets and the heartbeat callback.
         """
         self._logger.info('Closing')
-        # listener.stop()
 
         if self.publish:
             self.publish.close()
@@ -176,7 +165,7 @@ class BaseWorker(object):
         self.heartbeat(self.frontstream)
 
         if self.current_liveness < 0:
-            self._logger.warning('Lost connection')
+            self._logger.info('Lost connection - timed out')
             IOLoop.instance().stop()
 
             # this would reconnect the worker
@@ -211,7 +200,7 @@ class BaseWorker(object):
         """
         self.current_liveness -= 1
         # Set up ability to filter this out - Probably set up a different logger?
-        self._logger.debug('Sending heartbeat')
+        # self._logger.debug('Sending heartbeat')
         socket.send_multipart([b'', self._protocol, mdp.HEARTBEAT])
 
     def disconnect(self, socket):
@@ -222,7 +211,7 @@ class BaseWorker(object):
         socket.send_multipart([b'', self._protocol, mdp.DISCONNECT])
 
 if __name__ == '__main__':
-    worker = BaseWorker(str(1), "tcp://127.0.0.1:5557", b'mame', "tcp://127.0.0.1:5558")
+    worker = BaseWorker(str(random.randint(69, 420)), "tcp://127.0.0.1:5557", b'mame', "tcp://127.0.0.1:5558")
     worker.start()
     worker.report()
     worker.close()

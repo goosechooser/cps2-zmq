@@ -2,11 +2,8 @@
 """
 MameServer.py
 """
-import sys
-import zmq
-from zmq.eventloop.zmqstream import ZMQStream
-from zmq.eventloop.ioloop import IOLoop, PeriodicCallback
-from cps2_zmq.gather import mdp, Broker
+from zmq.eventloop.ioloop import PeriodicCallback
+from cps2_zmq.gather import Broker
 
 HB_INTERVAL = 1000
 HB_LIVENESS = 3
@@ -32,13 +29,13 @@ class MameServer(Broker.Broker):
     WPROTOCOL = b'MDPW01'
     msgs_recv = 0
 
-    def __init__(self, front_addr, toworkers):
-        super(MameServer, self).__init__(front_addr, toworkers)
+    def __init__(self, front_addr, toworkers, log_to_file=False):
+        super(MameServer, self).__init__(front_addr, toworkers, log_to_file)
         self.msgreport = None
 
     def setup(self):
         """
-        Sets up the heartbeater callback.
+        Sets up msgreport callback.
         """
         super(MameServer, self).setup()
         self.msgreport = PeriodicCallback(self.report, 10 * HB_INTERVAL)
@@ -57,5 +54,5 @@ class MameServer(Broker.Broker):
 if __name__ == '__main__':
     server = MameServer("tcp://127.0.0.1:5556", "tcp://127.0.0.1:5557")
     server.start()
-    server.shutdown()
     server.report()
+    server.shutdown()

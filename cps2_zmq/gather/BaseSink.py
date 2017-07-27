@@ -84,6 +84,6 @@ class BaseSink(BaseWorker):
         return msg
 
 if __name__ == '__main__':
-    sink = BaseSink("sink-1", "tcp://127.0.0.1:5557", "tcp://127.0.0.1:5558", [''])
+    sink = BaseSink("1", "tcp://127.0.0.1:5557", "tcp://127.0.0.1:5558", [''])
     sink.start()
     sink.close()

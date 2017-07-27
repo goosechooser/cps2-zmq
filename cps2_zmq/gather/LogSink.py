@@ -11,13 +11,13 @@ class LogSink(BaseSink):
         Figure out extent to which this'll be overridden.
         """
         self.msgs_recv += 1
-        self.logger.info('Received message %s', msg)
+        self._logger.info('Received message %s', msg)
 
         topic = msg.pop(0).decode('utf-8')
         log = msg.pop().decode('utf-8')
 
-        self.logger.info('topic %s', topic)
-        self.logger.info('message %s', log)
+        self._logger.info('topic %s', topic)
+        self._logger.info('message %s', log)
 
         topic_split = self.handle_topic(topic)
         print('topic_split', topic_split)
@@ -31,7 +31,7 @@ class LogSink(BaseSink):
         print('handle_log', log)
 
 if __name__ == '__main__':
-    sink = LogSink("logsink-1", "tcp://127.0.0.1:5557", "tcp://127.0.0.1:5558", [''])
+    sink = LogSink("1", "tcp://127.0.0.1:5557", "tcp://127.0.0.1:5558", ['MameWorker'])
     sink.start()
     sink.report()
     sink.close()

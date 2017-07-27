@@ -1,7 +1,6 @@
 """
 Default logging rules.
 """
-import sys
 import logging
 import logging.config
 
@@ -22,61 +21,32 @@ DEFAULT_LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'default'
         },
-        'file':{
 
-        }
-    },
-    'root': {
-        'level': 'INFO',
-        'handlers': ['console']
     }
 }
 
-WORKER_LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'filters': {
-
-    },
-    'formatters': {
-        'default': {
-            'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        }
-    },
-    'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'default'
-        },
-        'file': {
+def configure(logger, fhandler=False):
+    if fhandler:
+        fname = '.'.join([logger, 'log'])
+        fhandler = {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'formatter': 'default',
-            # 'filename': None
+            'filename': fname
         }
-    },
-    # 'root': {
-    #     'level': 'INFO',
-    #     'handlers': ['console']
-    # }
-}
 
+        DEFAULT_LOGGING['handlers']['file'] = fhandler
 
-def configure():
-    logging.config.dictConfig(DEFAULT_LOGGING)
-
-def configure_worker(worker):
-    name = '.'.join([worker.__class__.__name__, str(worker.idn, encoding='utf-8')])
-    fname = '.'.join([name, 'log'])
-    WORKER_LOGGING['handlers']['file']['filename'] = fname
-    logger = {
-        name : {
+    loggers = {
+        logger : {
             'level': 'DEBUG',
-            'handlers': WORKER_LOGGING['handlers']
+            'handlers': DEFAULT_LOGGING['handlers'],
+            'propagate': False
         }
     }
-    WORKER_LOGGING['loggers'] = logger
-    logging.config.dictConfig(WORKER_LOGGING)
 
+    DEFAULT_LOGGING['loggers'] = loggers
 
+    logging.config.dictConfig(DEFAULT_LOGGING)
+
+    return logging.getLogger(logger)
