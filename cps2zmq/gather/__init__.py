@@ -5,4 +5,3 @@ from cps2zmq.gather.LogSink import LogSink
 from cps2zmq.gather.MameServer import MameServer
 from cps2zmq.gather.MameWorker import MameWorker
 from cps2zmq.gather.MongoSink import MongoSink
-from cps2zmq.gather.SinkBroker import SinkBroker
