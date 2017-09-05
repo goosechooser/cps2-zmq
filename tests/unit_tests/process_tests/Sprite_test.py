@@ -24,8 +24,8 @@ def test_to_and_from_json(testframe):
     dict_sprite = sprite.to_json()
     assert isinstance(dict_sprite, str)
 
-    sprite = Sprite.Sprite.from_json(dict_sprite)
-    assert isinstance(sprite, Sprite.Sprite)
+    sprite = Sprite.from_json(dict_sprite)
+    assert isinstance(sprite, Sprite)
 
 #broken for the same reason ColorTile's 'to_tile' is broken
 @pytest.mark.skip
@@ -65,4 +65,3 @@ def test_sprite_mask():
     print('sprite mask result', result)
 
     assert  result == expected
-    

@@ -11,7 +11,7 @@ def get_file(fpath):
 def get_frame(framefile):
     with open(os.path.normpath(framefile), 'r') as f:
         data = f.read()
-    return Frame.Frame.from_json(data)
+    return Frame.from_json(data)
 
 @pytest.fixture(scope='module')
 def testframe():

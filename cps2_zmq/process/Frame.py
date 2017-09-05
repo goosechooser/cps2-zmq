@@ -33,6 +33,7 @@ class Frame(GraphicAsset):
             sprites (:obj:`list` of :obj:`Sprite.Sprite`): a list of sprites
         """
         self.sprites.extend(sprites)
+
     def to_array(self):
         pass
 
@@ -69,59 +70,57 @@ class Frame(GraphicAsset):
         with open(path, 'w') as f:
             f.write(self.to_json())
 
-# Factories
-def new(fnumber, sprites, palettes):
-    """
-    A factory method for Frame. Converts the palettes given into tuples.
+    # Factories
+    @classmethod
+    def from_file(cls, path):
+        """
+        Returns a Frame from a json encoded file.
 
-    Args:
-        fnumber (int): the frame number
-        sprites (:obj:`list` of :obj:`Sprite.Sprite`): a list of Sprites
-        palettes (dict): a dict of 32 keys. Each key is paired with another dict of length 16.
+        Args:
+            path (str): path to the json file.
 
-    Returns:
-        a Frame object
-    """
-    converted = {}
-    for k, v in palettes.items():
-        # conv = {kk : _argb_to_rgb(hex(color)[2:]) for kk, color in v.items()}
-        conv = [_argb_to_rgb(hex(color)[2:]) for color in v]
-        converted[k] = conv
+        Returns:
+            a Frame object
+        """
+        with open(path, 'r') as f:
+            frame = json.dumps(f.read())
 
-    return Frame(fnumber, sprites, converted)
+        return frame
 
-def from_file(path):
-    """
-    Returns a Frame from a json encoded file.
+    @classmethod
+    def new(cls, fnumber, sprites, palettes):
+        """
+        A factory method for Frame. Converts the palettes given into tuples.
 
-    Args:
-        path (str): path to the json file.
+        Args:
+            fnumber (int): the frame number
+            sprites (:obj:`list` of :obj:`Sprite.Sprite`): a list of Sprites
+            palettes (dict): a dict of 32 keys. Each key is paired with another dict of length 16.
 
-    Returns:
-        a Frame object
-    """
-    with open(path, 'r') as f:
-        frame = json.dumps(f.read())
+        Returns:
+            a Frame object
+        """
+        converted = {}
+        for k, v in palettes.items():
+            # conv = {kk : Frame._argb_to_rgb(hex(color)[2:]) for kk, color in v.items()}
+            conv = [Frame._argb_to_rgb(hex(color)[2:]) for color in v]
+            converted[k] = conv
 
-    return frame
+        return cls(fnumber, sprites, converted)
 
-def _argb_to_rgb(color):
-    """
-    Converts the 2 byte ARGB format the cps2 uses to a tuple of RGB values.
+    @staticmethod
+    def _argb_to_rgb(color):
+        """
+        Converts the 2 byte ARGB format the cps2 uses to a tuple of RGB values.
 
-    Args:
-        color (bytes): a 2 byte value in ARGB format.
+        Args:
+            color (bytes): a 2 byte value in ARGB format.
 
-    Returns:
-        an (int, int, int) representing the RGB value of a pixel.
-    """
-    if len(color) < 4:
-        color = (4 - len(color)) * '0' + color
+        Returns:
+            an (int, int, int) representing the RGB value of a pixel.
+        """
+        if len(color) < 4:
+            color = (4 - len(color)) * '0' + color
 
-    return (int(color[1] * 2, 16), int(color[2] * 2, 16), int(color[3] * 2, 16))
+        return (int(color[1] * 2, 16), int(color[2] * 2, 16), int(color[3] * 2, 16))
 
-def from_image(image, frame):
-    """
-    Unimplemented. One day.
-    """
-    pass

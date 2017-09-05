@@ -28,29 +28,35 @@ class Tile(GraphicAsset):
     def __repr__(self):
         return ' '.join(["Tile:", str(self.address), 'size:', str(self.dimensions)])
 
-    def unpack(self):
+    @classmethod
+    def from_packed_bytes(cls, address, data, dimensions=16):
         """
-        Unpacks the Tile's data. If its a 16x16 tile, deinterleaves the 8x8 subtiles.
-        This converts the 4BPP values used by the CPS2 into 'pixel' values (0-15).
+        A factory function.
+
+        Args:
+            address (int): the address in memory the tile resides at.
+            data (:obj:`bytes`): 32 bytes for a 8x8 tile or 128 bytes for a 16x16 tile.
+            dimensions (int): 8 for an 8x8 tile, 16 for a 16x16 tile.
 
         Returns:
-            a :obj:`bytes` of the unpacked data.
+            a Tile with unpacked data.
         """
         tile_fmt = Struct(32 * 'c')
-        tile_iter = tile_fmt.iter_unpack(self.data)
+        tile_iter = tile_fmt.iter_unpack(data)
 
         # need to interleave the 4 8x8 tiles in a 16x16 tile
-        if self.dimensions == 16:
-            interleaved = Tile._interleave_subtiles(self.data)
+        if dimensions == 16:
+            interleaved = Tile._interleave_subtiles(data)
             iter_ = tile_fmt.iter_unpack(interleaved)
         else:
             tile_fmt = Struct(32 * 'c')
-            tile_iter = tile_fmt.iter_unpack(self.data)
+            tile_iter = tile_fmt.iter_unpack(data)
             iter_ = tile_iter
 
         tiles = [Tile._bitplanes_to_tile(b''.join(tile)) for tile in iter_]
-        return b''.join(tiles)
+        unpacked_data = b''.join(tiles)
 
+        return cls(address, unpacked_data, dimensions)
     # Converts contents, then rearranges innter 8x8 tiles
     def pack(self, data):
         """
@@ -254,30 +260,23 @@ class Tile(GraphicAsset):
 
         return [b''.join(data) for data in deinterleaved]
 
-# Factories
-def new(addr, data, dimensions=16):
-    tile = Tile(addr, data, dimensions)
-    if tile.data is not None:
-        tile.data = tile.unpack()
-    return tile
+    @classmethod
+    def from_image(cls, image, address):
+        """
+        A factory function.
 
-def from_image(image, address):
-    """
-    A factory function.
+        Args:
+            image (str): path to image
+            address (str): address in memory of Tile
 
-    Args:
-        image (str): path to image
-        address (str): address in memory of Tile
+        Returns:
+            a Tile
+        """
+        img = Image.open(image)
+        dims = img.size[0]
+        data = bytes(img.getdata())
 
-    Returns:
-        a Tile
-    """
-    im = Image.open(image)
-    dims = im.size[0]
-
-    tile = new(address, None, dims)
-    tile.data = bytes(im.getdata())
-    return tile
+        return cls(address, data, dims)
 
 class EmptyTile(Tile):
     """
@@ -292,6 +291,3 @@ class EmptyTile(Tile):
         tile = [row] * self.dimensions
 
         return np.array(tile)
-
-
-

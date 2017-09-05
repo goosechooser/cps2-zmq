@@ -1,15 +1,15 @@
 from abc import ABC, abstractmethod
 import json
 from PIL import Image
-from cps2_zmq.process import encoding
+from cps2_zmq.process.encoding import Cps2Decoder, Cps2Encoder
 
 class GraphicAsset(ABC):
     def to_json(self):
-        return json.dumps(self, cls=encoding.Cps2Encoder)
+        return json.dumps(self, cls=Cps2Encoder)
 
     @classmethod
     def from_json(cls, dict_):
-        return json.loads(dict_, cls=encoding.Cps2Decoder)
+        return json.loads(dict_, cls=Cps2Decoder)
 
     @abstractmethod
     def to_array(self):

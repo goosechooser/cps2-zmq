@@ -20,7 +20,7 @@ def read_tiles_from_file(gfxfile, unfilled, fsplit=False):
                 read_data = gfxfile.read(32)
             if tile.dimensions == 16:
                 read_data = gfxfile.read(128)
-            filled.append(Tile.new(tile.address, read_data, tile.dimensions))
+            filled.append(Tile.from_packed_bytes(tile.address, read_data, tile.dimensions))
 
     return filled
 

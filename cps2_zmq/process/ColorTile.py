@@ -1,7 +1,7 @@
 from struct import iter_unpack
 import numpy as np
 from PIL import Image
-from cps2_zmq.process.Tile import Tile
+from cps2_zmq.process import Tile
 
 # Tile with 100% more color
 # Unpacked and deinterleaved
@@ -74,7 +74,7 @@ class ColorTile(Tile):
         except ValueError:
             image = Image.fromarray(self.to_array(), 'P')
         image.save(path + ".png")
-    
+
     # Broken atm
     def to_tile(self):
         """
@@ -88,50 +88,54 @@ class ColorTile(Tile):
 
         return Tile(self.address, bytes(stripped))
 
-def new(address, data, palette, dimensions=16):
-    """
-    A factory function.
+    # @classmethod
+    # def new(_class, address, data, palette, dimensions=16):
+    #     """
+    #     A factory function.
 
-    Returns:
-        a :obj:`ColorTile`.
-    """
-    return ColorTile(address, data, palette, dimensions)
+    #     Returns:
+    #         a :obj:`ColorTile`.
+    #     """
+    #     return _class(address, data, palette, dimensions)
 
-def from_tile(tile, palette):
-    """
-    A factory function.
+    @classmethod
+    def from_tile(cls, tile, palette):
+        """
+        A factory function.
 
-    Args:
-        tile (:obj:`Tile`): the :obj:`Tile` to be colored.
-        palette (dict): the color palette.
+        Args:
+            tile (:obj:`Tile`): the :obj:`Tile` to be colored.
+            palette (dict): the color palette.
 
-    Returns:
-        a :obj:`ColorTile`.
-    """
-    ctile = ColorTile(tile.address, tile.data, palette, tile.dimensions)
-    ctile.color()
-    return ctile
+        Returns:
+            a :obj:`ColorTile`.
+        """
+        ctile = cls(tile.address, tile.data, palette, tile.dimensions)
+        ctile.color()
+        
+        return ctile
 
-# For now just do image -> ColorTile leaving palette info intact.
-def from_image(image, address):
-    """
-    A factory function.
+    # For now just do image -> ColorTile leaving palette info intact.
+    @classmethod
+    def from_image(cls, image, address):
+        """
+        A factory function.
 
-    Args:
-        image (str): path to image
-        address (str): address in memory of :obj:`ColorTile`.
+        Args:
+            image (str): path to image
+            address (str): address in memory of :obj:`ColorTile`.
 
-    Returns:
-        a :obj:`ColorTile`.
-    """
-    im = Image.open(image)
-    dims = im.size[0]
+        Returns:
+            a :obj:`ColorTile`.
+        """
+        im = Image.open(image)
+        dims = im.size[0]
 
-    if im.mode == 'P':
-        return 'Image is in Palette mode'
+        if im.mode == 'P':
+            return 'Image is in Palette mode'
 
-    tile_data = list(map(list, im.getdata()))
+        tile_data = list(map(list, im.getdata()))
 
-    tile = new(address, tile_data, None, dims)
+        tile = cls(address, tile_data, None, dims)
 
-    return tile
+        return tile
