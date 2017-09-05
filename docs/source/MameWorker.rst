@@ -1,9 +1,9 @@
-.. py:module:: cps2_zmq.gather.MameWorker
-.. py:currentmodule:: cps2_zmq.gather.MameWorker
+.. py:module:: cps2zmq.gather.MameWorker
+.. py:currentmodule:: cps2zmq.gather.MameWorker
 
 :py:mod:`MameWorker` Module
 ===========================
-The :py:mod:`~cps2_zmq.gather.MameWorker` module contains a class of the same name. Functionality related to processing of message contents are done here. 
+The :py:mod:`~cps2zmq.gather.MameWorker` module contains a class of the same name. Functionality related to processing of message contents are done here.
 
 Examples
 --------
@@ -11,4 +11,4 @@ Examples
 The MameWorker Class
 --------------------
 
-.. autoclass:: cps2_zmq.gather.MameWorker.MameWorker
+.. autoclass:: cps2zmq.gather.MameWorker.MameWorker
