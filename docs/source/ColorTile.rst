@@ -22,9 +22,7 @@ The :py:class:`~cps2zmq.process.ColorTile.ColorTile` class has the following met
 .. automethod:: cps2zmq.process.ColorTile.ColorTile.to_bmp
 .. automethod:: cps2zmq.process.ColorTile.ColorTile.to_png
 .. automethod:: cps2zmq.process.ColorTile.ColorTile.to_tile
+.. automethod:: cps2zmq.process.ColorTile.ColorTile.from_tile
+.. automethod:: cps2zmq.process.ColorTile.from_image
 
-Factories
----------
-.. autofunction:: cps2zmq.process.ColorTile.from_tile
-.. autofunction:: cps2zmq.process.ColorTile.from_image
 

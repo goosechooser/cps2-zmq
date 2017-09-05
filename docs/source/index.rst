@@ -14,7 +14,7 @@ CPS2-ZMQ is a project comprised of packages to :mod:`gather` assets from the CPS
    gather
    process
    setup
-   cps2_zmq
+   cps2zmq
 
 
 Indices and tables

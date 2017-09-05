@@ -28,16 +28,7 @@ The :py:class:`~cps2zmq.process.Frame.Frame` class has the following methods
 .. automethod:: cps2zmq.process.Frame.Frame.add_sprites
 .. automethod:: cps2zmq.process.Frame.Frame.to_png
 .. automethod:: cps2zmq.process.Frame.Frame.to_file
-
-Factories
----------
-
-.. autofunction:: cps2zmq.process.Frame.from_file
-
-Functions
----------
-
-.. autofunction:: cps2zmq.process.Frame.from_image
+.. automethod:: cps2zmq.process.Frame.from_file
 
 Processing Frames further
 --------------------------

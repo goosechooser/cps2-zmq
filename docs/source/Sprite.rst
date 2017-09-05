@@ -34,12 +34,8 @@ The :py:class:`~cps2zmq.process.Sprite.Sprite` class has the following methods
 .. automethod:: cps2zmq.process.Sprite.Sprite.to_bmp
 .. automethod:: cps2zmq.process.Sprite.Sprite.to_png
 .. automethod:: cps2zmq.process.Sprite.Sprite.to_tile
-
-Factories
----------
-
-.. autofunction:: cps2zmq.process.Sprite.from_dict
-.. autofunction:: cps2zmq.process.Sprite.from_image
+.. automethod:: cps2zmq.process.Sprite.from_dict
+.. automethod:: cps2zmq.process.Sprite.from_image
 
 Functions
 ---------

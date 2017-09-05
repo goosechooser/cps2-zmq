@@ -18,13 +18,9 @@ The Tile Class
 
 The :py:class:`~cps2zmq.process.Tile.Tile` class has the following methods
 
-.. automethod:: cps2zmq.process.Tile.Tile.unpack
+.. automethod:: cps2zmq.process.Tile.Tile.from_packed_bytes
 .. automethod:: cps2zmq.process.Tile.Tile.pack
 .. automethod:: cps2zmq.process.Tile.Tile.to_array
 .. automethod:: cps2zmq.process.Tile.Tile.to_bmp
 .. automethod:: cps2zmq.process.Tile.Tile.to_png
-
-Factories
----------
-.. autofunction:: cps2zmq.process.Tile.from_image
-
+.. automethod:: cps2zmq.process.Tile.from_image

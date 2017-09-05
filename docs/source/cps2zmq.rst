@@ -1,4 +1,4 @@
-cps2_zmq package
+cps2zmq package
 ================
 
 Subpackages
@@ -9,7 +9,7 @@ Subpackages
 Module contents
 ---------------
 
-.. automodule:: cps2_zmq
+.. automodule:: cps2zmq
     :members:
     :undoc-members:
     :show-inheritance:
