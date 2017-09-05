@@ -1,9 +1,8 @@
 import time
 import pytest
 import pymongo
-from cps2_zmq.gather.MameServer import MameServer
-from cps2_zmq.gather.MameWorker import MameWorker
-from cps2_zmq.gather.BaseWorker import BaseWorker
+from cps2_zmq.gather import MameServer
+from cps2_zmq.gather import MameWorker
 
 # db_name = 'integration_test'
 
@@ -23,7 +22,7 @@ def test_pipeline(client):
 
     client.start()
     server.start()
-    
+
     # love too test nonblocking code
     time.sleep(5)
     server.shutdown()
