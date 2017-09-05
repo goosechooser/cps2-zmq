@@ -1,7 +1,7 @@
 # pylint: disable=E1101
 
 import pytest
-from cps2_zmq.gather import MameServer
+from cps2zmq.gather import MameServer
 
 port = 6668
 front_addr = ':'.join(["tcp://127.0.0.1", str(port)])

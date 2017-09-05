@@ -2,8 +2,8 @@
 
 import zmq
 import pytest
-from cps2_zmq.gather import Broker
-from cps2_zmq.gather import mdp
+from cps2zmq.gather import Broker
+from cps2zmq.gather import mdp
 
 port = 6668
 front_addr = ':'.join(["tcp://127.0.0.1", str(port)])

@@ -2,8 +2,8 @@
 
 import pytest
 import zmq
-from cps2_zmq.gather import BaseWorker
-from cps2_zmq.gather import mdp
+from cps2zmq.gather import BaseWorker
+from cps2zmq.gather import mdp
 
 port = 6666
 addr = ':'.join(["tcp://127.0.0.1", str(port)])

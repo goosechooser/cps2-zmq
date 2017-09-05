@@ -10,7 +10,7 @@ import zmq
 from zmq.log.handlers import PUBHandler
 from zmq.eventloop.zmqstream import ZMQStream
 from zmq.eventloop.ioloop import IOLoop, DelayedCallback, PeriodicCallback
-from cps2_zmq.gather import mdp, log
+from cps2zmq.gather import mdp, log
 
 class BaseWorker(object):
     """

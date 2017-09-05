@@ -2,7 +2,7 @@
 Unit tests for MameWorker.py
 """
 import pytest
-from cps2_zmq.gather import MameWorker
+from cps2zmq.gather import MameWorker
 
 @pytest.mark.parametrize("message, expected", [
     ({'frame_number': 1141, 'sprites': [[420, 69, 300, 1], [1, 1, 1, 1]],

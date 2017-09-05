@@ -1,7 +1,7 @@
 import json
 from PIL import Image
-# from cps2_zmq.process import encoding
-from cps2_zmq.process.GraphicAsset import GraphicAsset
+# from cps2zmq.process import encoding
+from cps2zmq.process.GraphicAsset import GraphicAsset
 
 class Frame(GraphicAsset):
     """

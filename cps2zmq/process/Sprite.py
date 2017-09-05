@@ -1,16 +1,16 @@
 from PIL import Image
 import numpy as np
 
-from cps2_zmq.process import Tile, ColorTile
-from cps2_zmq.process import GraphicAsset
+from cps2zmq.process import Tile, ColorTile
+from cps2zmq.process import GraphicAsset
 
 class Sprite(GraphicAsset):
     """
-    A Sprite is a grouping of :py:mod:`~cps2_zmq.gather.Tile.Tile` that use the same palette.
+    A Sprite is a grouping of :py:mod:`~cps2zmq.gather.Tile.Tile` that use the same palette.
 
     Attributes:
-        base_tile (str): the memory address of the first :py:mod:`~cps2_zmq.gather.Tile.Tile`
-        tiles (:obj:`list` of :py:mod:`~cps2_zmq.gather.Tile.Tile`): Tiles that make up the Sprite
+        base_tile (str): the memory address of the first :py:mod:`~cps2zmq.gather.Tile.Tile`
+        tiles (:obj:`list` of :py:mod:`~cps2zmq.gather.Tile.Tile`): Tiles that make up the Sprite
         palnum (int): which of the 32 palettes in a Frame the Sprite uses
         location (int, int): the (x,y) coordinate where the Sprite will be drawn on the screen
         size (int, int): (width, height) the size of the Sprite in Tiles. (1, 1) means a single Tile

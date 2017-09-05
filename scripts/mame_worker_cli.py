@@ -1,6 +1,6 @@
 import sys
 import argparse
-from cps2_zmq.gather.MameWorker import MameWorker
+from cps2zmq.gather.MameWorker import MameWorker
 
 def parse_args(args):
     parser = argparse.ArgumentParser(description='starts a MameWorker process')

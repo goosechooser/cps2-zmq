@@ -5,7 +5,7 @@ For deserializing our objects - soon.
 """
 import importlib
 import json
-import cps2_zmq.process
+import cps2zmq.process
 
 class Cps2Decoder(json.JSONDecoder):
     def __init__(self):
@@ -38,13 +38,13 @@ class Cps2Encoder(json.JSONEncoder):
     For serializing Frame, Sprite, and Tile objects.
     """
     def default(self, o):
-        if isinstance(o, cps2_zmq.process.Tile):
+        if isinstance(o, cps2zmq.process.Tile):
             return handle_tile_dict(o)
 
-        if isinstance(o, cps2_zmq.process.Sprite):
+        if isinstance(o, cps2zmq.process.Sprite):
             return handle_sprite_dict(o)
 
-        if isinstance(o, cps2_zmq.process.Frame):
+        if isinstance(o, cps2zmq.process.Frame):
             dict_ = dict((k, v) for k, v in o.__dict__.items())
             dict_['sprites'] = [handle_sprite_dict(s) for s in dict_['sprites']]
             insert_module_class(dict_, o)

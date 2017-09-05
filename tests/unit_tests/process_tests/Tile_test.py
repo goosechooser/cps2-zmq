@@ -1,6 +1,6 @@
 from struct import Struct
 import pytest
-from cps2_zmq.process import Tile
+from cps2zmq.process import Tile
 
 TEST_ADDR = ''
 TEST_DATA = 'F1F2F3F4F1F2F3F4F1F2F3F4F1F2F3F4F1F2F3F4F1F2F3F4F1F2F3F4F1F2F3F4'

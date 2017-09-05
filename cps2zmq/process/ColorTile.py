@@ -1,7 +1,7 @@
 from struct import iter_unpack
 import numpy as np
 from PIL import Image
-from cps2_zmq.process import Tile
+from cps2zmq.process import Tile
 
 # Tile with 100% more color
 # Unpacked and deinterleaved
@@ -112,7 +112,7 @@ class ColorTile(Tile):
         """
         ctile = cls(tile.address, tile.data, palette, tile.dimensions)
         ctile.color()
-        
+
         return ctile
 
     # For now just do image -> ColorTile leaving palette info intact.

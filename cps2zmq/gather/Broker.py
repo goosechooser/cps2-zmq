@@ -7,7 +7,7 @@ import logging
 import zmq
 from zmq.eventloop.zmqstream import ZMQStream
 from zmq.eventloop.ioloop import IOLoop, PeriodicCallback
-from cps2_zmq.gather import mdp, log
+from cps2zmq.gather import mdp, log
 
 HB_INTERVAL = 1000
 HB_LIVENESS = 3

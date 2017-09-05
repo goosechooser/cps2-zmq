@@ -1,6 +1,6 @@
 import sys
 import argparse
-from cps2_zmq.gather.MameServer import MameServer
+from cps2zmq.gather.MameServer import MameServer
 
 def parse_args(args):
     parser = argparse.ArgumentParser(description='starts a MameServer process')

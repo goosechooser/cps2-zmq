@@ -1,7 +1,7 @@
 import json
 import os
 import pytest
-from cps2_zmq.process import encoding, Tile, Frame, Sprite
+from cps2zmq.process import encoding, Tile, Frame, Sprite
 
 def is_json(str_):
     """
@@ -31,7 +31,7 @@ def test_sprite_encode(testframe):
     assert is_json(sprite_encode)
 
 def test_sprite_decode():
-    sprite_encode = '{"__module__": "cps2_zmq.process.Sprite", "__class__": "Sprite",\
+    sprite_encode = '{"__module__": "cps2zmq.process.Sprite", "__class__": "Sprite",\
     "flips": [1, 0], \
     "tiles": [{"__type__": "tile", "dimensions": 16, "address":\
     "0x2f775", "data": null}], "base_tile": "0x2f775", "palnum": "0",\
@@ -49,7 +49,7 @@ def test_tile_encode(testframe):
 
 def test_tile_decode():
     tile_encode = '{"__class__": "Tile", "data": null,\
-    "__module__": "cps2_zmq.process.Tile", "dimensions": 16, "address": "0x2f775"}'
+    "__module__": "cps2zmq.process.Tile", "dimensions": 16, "address": "0x2f775"}'
     tile_decode = json.loads(tile_encode, cls=encoding.Cps2Decoder)
 
     assert isinstance(tile_decode, Tile)

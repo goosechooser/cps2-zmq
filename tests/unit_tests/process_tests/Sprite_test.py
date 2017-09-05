@@ -1,6 +1,6 @@
 import os
 import pytest
-from cps2_zmq.process import tile_operations, Sprite
+from cps2zmq.process import tile_operations, Sprite
 
 # WORKS
 # Not a real test though

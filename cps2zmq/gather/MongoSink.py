@@ -9,7 +9,7 @@ import msgpack
 import zmq
 import pymongo
 from pymongo.errors import ConnectionFailure
-from cps2_zmq.gather import BaseSink
+from cps2zmq.gather import BaseSink
 
 class MongoSink(BaseSink):
     """

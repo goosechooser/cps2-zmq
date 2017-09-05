@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import json
 from PIL import Image
-from cps2_zmq.process.encoding import Cps2Decoder, Cps2Encoder
+from cps2zmq.process.encoding import Cps2Decoder, Cps2Encoder
 
 class GraphicAsset(ABC):
     def to_json(self):

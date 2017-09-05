@@ -2,8 +2,8 @@ import json
 import pytest
 import msgpack
 import pymongo
-from cps2_zmq.gather import MongoSink
-from cps2_zmq.gather import mdp
+from cps2zmq.gather import MongoSink
+from cps2zmq.gather import mdp
 
 idn = 'sink-1'
 port = 6666

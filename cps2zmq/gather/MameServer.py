@@ -3,7 +3,7 @@
 MameServer.py
 """
 from zmq.eventloop.ioloop import PeriodicCallback
-from cps2_zmq.gather import Broker
+from cps2zmq.gather import Broker
 
 HB_INTERVAL = 1000
 HB_LIVENESS = 3

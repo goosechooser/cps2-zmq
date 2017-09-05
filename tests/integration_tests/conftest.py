@@ -2,11 +2,9 @@
 
 import sys
 import time
-import random
 from threading import Thread
 import pytest
 import zmq
-import msgpack
 
 # Need to refactor this to pull from not mongodb
 class MockMameClient(Thread):
@@ -22,7 +20,7 @@ class MockMameClient(Thread):
     def run(self):
         print('Client sending frames')
         sys.stdout.flush()
-        
+
         for frame in self.msgs:
             self.request(b'mame', frame)
 

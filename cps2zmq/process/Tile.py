@@ -1,7 +1,7 @@
 from struct import Struct
 from PIL import Image
 import numpy as np
-from cps2_zmq.process.GraphicAsset import GraphicAsset
+from cps2zmq.process.GraphicAsset import GraphicAsset
 
 # Need to clean this file up
 class Tile(GraphicAsset):

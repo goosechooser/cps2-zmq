@@ -4,8 +4,8 @@ MameWorker.py
 """
 import random
 import msgpack
-from cps2_zmq.gather import BaseWorker
-from cps2_zmq.process import Sprite, Frame
+from cps2zmq.gather import BaseWorker
+from cps2zmq.process import Sprite, Frame
 
 class MameWorker(BaseWorker):
     """

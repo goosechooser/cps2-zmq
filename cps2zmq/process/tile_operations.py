@@ -1,4 +1,4 @@
-from cps2_zmq.process import Tile
+from cps2zmq.process import Tile
 
 # tile_operations.py handles I/O tasks
 # ie: reading tile data or writing tile data out

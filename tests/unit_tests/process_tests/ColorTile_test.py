@@ -1,5 +1,5 @@
 import pytest
-from cps2_zmq.process import tile_operations, ColorTile
+from cps2zmq.process import tile_operations, ColorTile
 
 def test_from_image_colortile(tmpdir_factory, testframe, gfxfile):
     sprite = testframe.sprites[0]

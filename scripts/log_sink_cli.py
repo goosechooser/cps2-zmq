@@ -1,6 +1,6 @@
 import sys
 import argparse
-from cps2_zmq.gather.LogSink import LogSink
+from cps2zmq.gather.LogSink import LogSink
 
 
 def parse_args(args):

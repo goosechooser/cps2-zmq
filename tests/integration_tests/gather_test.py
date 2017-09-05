@@ -1,8 +1,7 @@
 import time
 import pytest
 import pymongo
-from cps2_zmq.gather import MameServer
-from cps2_zmq.gather import MameWorker
+from cps2zmq.gather import MameServer, MameWorker
 
 # db_name = 'integration_test'
 
@@ -27,14 +26,14 @@ def test_pipeline(client):
     time.sleep(5)
     server.shutdown()
 
-    assert server.frontstream == None
-    assert server.backstream == None
+    assert server.frontstream is None
+    assert server.backstream is None
 
     msgs_sum = 0
     for w in workers:
         w.close()
         msgs_sum += w.msgs_recv
-        assert w.heartbeater == None
-        assert w.frontstream == None
+        assert w.heartbeater is None
+        assert w.frontstream is None
 
     assert server.msgs_recv == msgs_sum

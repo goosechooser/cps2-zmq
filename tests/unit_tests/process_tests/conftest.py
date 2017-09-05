@@ -2,8 +2,8 @@ import os
 import mmap
 import pytest
 import json
-# from cps2_zmq.process import encoding
-from cps2_zmq.process import Frame
+# from cps2zmq.process import encoding
+from cps2zmq.process import Frame
 
 def get_file(fpath):
     return open(os.path.normpath(fpath), 'r+b')
