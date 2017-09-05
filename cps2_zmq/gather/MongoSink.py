@@ -9,7 +9,7 @@ import msgpack
 import zmq
 import pymongo
 from pymongo.errors import ConnectionFailure
-from cps2_zmq.gather.BaseSink import BaseSink
+from cps2_zmq.gather import BaseSink
 
 class MongoSink(BaseSink):
     """
@@ -55,7 +55,7 @@ class MongoSink(BaseSink):
             self.db[self.coll].insert_one(json_)
 
 if __name__ == '__main__':
-    sink = MongoSink("sink-1", "tcp://127.0.0.1:5557", "tcp://127.0.0.1:5558", "frame", "cps2")
+    sink = MongoSink("1", "tcp://127.0.0.1:5557", "tcp://127.0.0.1:5558", "frame", "cps2")
     sink.start()
     sink.close()
     sink.report()

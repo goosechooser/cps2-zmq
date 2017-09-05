@@ -15,7 +15,7 @@ service = b'mame'
 
 @pytest.fixture(scope="function")
 def broker():
-    broker = Broker.Broker(front_addr, back_addr)
+    broker = Broker(front_addr, back_addr)
     yield broker
     broker.shutdown()
 

@@ -4,7 +4,7 @@ MameWorker.py
 """
 import random
 import msgpack
-from cps2_zmq.gather.BaseWorker import BaseWorker
+from cps2_zmq.gather import BaseWorker
 from cps2_zmq.process import Sprite, Frame
 
 class MameWorker(BaseWorker):
@@ -31,22 +31,23 @@ class MameWorker(BaseWorker):
             self.publish.send_multipart(message)
 
     def process(self, message):
-        processed = process_message(message)
+        processed = MameWorker.process_message(message)
         json_msg = processed.to_json()
         self.log_result(json_msg)
         return json_msg
 
-def process_message(message):
-    """
-    Processes raw frame data sent by a MAME instance.
-    """
-    masked = [Sprite.sprite_mask(each) for each in message['sprites']]
-    palettes = message['palettes']
-    frame_number = message['frame_number']
-    sprites = [Sprite.from_dict(m) for m in masked]
-    result = Frame.new(frame_number, sprites, palettes)
+    @staticmethod
+    def process_message(message):
+        """
+        Processes raw frame data sent by a MAME instance.
+        """
+        masked = [Sprite.sprite_mask(each) for each in message['sprites']]
+        palettes = message['palettes']
+        frame_number = message['frame_number']
+        sprites = [Sprite.from_dict(m) for m in masked]
+        result = Frame.new(frame_number, sprites, palettes)
 
-    return result
+        return result
 
 if __name__ == '__main__':
     worker = MameWorker(str(random.randint(69, 420)), "tcp://127.0.0.1:5557", b'mame', pub_addr="tcp://127.0.0.1:5558")

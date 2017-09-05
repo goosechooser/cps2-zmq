@@ -8,7 +8,7 @@ from cps2_zmq.gather import Broker
 HB_INTERVAL = 1000
 HB_LIVENESS = 3
 
-class MameServer(Broker.Broker):
+class MameServer(Broker):
     """
     MameServer receives messages sent by an instance of MAME, and passes it to workers \
     for processing.

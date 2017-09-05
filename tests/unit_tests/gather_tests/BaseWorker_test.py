@@ -2,7 +2,7 @@
 
 import pytest
 import zmq
-from cps2_zmq.gather.BaseWorker import BaseWorker
+from cps2_zmq.gather import BaseWorker
 from cps2_zmq.gather import mdp
 
 port = 6666

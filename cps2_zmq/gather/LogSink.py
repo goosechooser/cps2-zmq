@@ -2,7 +2,7 @@
 """
 BaseSink.py
 """
-from cps2_zmq.gather.BaseSink import BaseSink
+from cps2_zmq.gather import BaseSink
 
 # Filters/Handlers/Loggers would do bulk of work here
 class LogSink(BaseSink):

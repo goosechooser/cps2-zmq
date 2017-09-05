@@ -13,7 +13,7 @@ service = b'mame'
 
 @pytest.fixture(scope="function")
 def server():
-    server = MameServer.MameServer(front_addr, back_addr)
+    server = MameServer(front_addr, back_addr)
     yield server
     server.shutdown()
 

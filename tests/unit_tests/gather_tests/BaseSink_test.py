@@ -1,7 +1,7 @@
 # pylint: disable=E1101
 
 import pytest
-from cps2_zmq.gather.BaseSink import BaseSink
+from cps2_zmq.gather import BaseSink
 from cps2_zmq.gather import mdp
 
 idn = 'sink-1'
