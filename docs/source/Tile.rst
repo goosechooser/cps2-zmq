@@ -26,6 +26,5 @@ The :py:class:`~cps2zmq.process.Tile.Tile` class has the following methods
 
 Factories
 ---------
-.. autofunction:: cps2zmq.process.Tile.new
 .. autofunction:: cps2zmq.process.Tile.from_image
 

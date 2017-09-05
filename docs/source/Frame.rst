@@ -32,7 +32,6 @@ The :py:class:`~cps2zmq.process.Frame.Frame` class has the following methods
 Factories
 ---------
 
-.. autofunction:: cps2zmq.process.Frame.new
 .. autofunction:: cps2zmq.process.Frame.from_file
 
 Functions

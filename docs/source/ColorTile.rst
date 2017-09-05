@@ -25,7 +25,6 @@ The :py:class:`~cps2zmq.process.ColorTile.ColorTile` class has the following met
 
 Factories
 ---------
-.. autofunction:: cps2zmq.process.ColorTile.new
 .. autofunction:: cps2zmq.process.ColorTile.from_tile
 .. autofunction:: cps2zmq.process.ColorTile.from_image
 
