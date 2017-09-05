@@ -1,11 +1,10 @@
 # my stuff
 frame*/
+my_scripts/
 production_data/
 .vscode/
-scratch.py
 notes
 # data/
-cps_zmq/gather/scratch.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
