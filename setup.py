@@ -7,7 +7,7 @@ with open('LICENSE') as f:
     license = f.read()
 
 setup(
-    name='cps2-zmq',
+    name='cps2_zmq',
     version='0.0.1',
     description='ya boi!!',
     long_description=readme,
