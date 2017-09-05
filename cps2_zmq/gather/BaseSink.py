@@ -7,7 +7,7 @@ import sys
 import zmq
 from zmq.eventloop.zmqstream import ZMQStream
 from zmq.eventloop.ioloop import IOLoop
-from cps2_zmq.gather.BaseWorker import BaseWorker
+from cps2_zmq.gather import BaseWorker
 from cps2_zmq.gather import mdp
 
 class BaseSink(BaseWorker):
