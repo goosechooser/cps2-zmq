@@ -1,0 +1,311 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>MameServer Module &mdash; CPS2-ZMQ 3.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CPS2-ZMQ 3.0 documentation" href="index.html"/>
+        <link rel="up" title="The gather Package" href="gather.html"/>
+        <link rel="next" title="MameWorker Module" href="MameWorker.html"/>
+        <link rel="prev" title="The gather Package" href="gather.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> CPS2-ZMQ
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="gather.html">The gather Package</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal"><span class="pre">MameServer</span></code> Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#examples">Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-mameserver-class">The MameServer Class</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="MameWorker.html"><code class="docutils literal"><span class="pre">MameWorker</span></code> Module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="process.html">The process Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Project Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cps2zmq.html">cps2zmq package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CPS2-ZMQ</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="gather.html">The gather Package</a> &raquo;</li>
+        
+      <li><code class="docutils literal"><span class="pre">MameServer</span></code> Module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/MameServer.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <span class="target" id="module-cps2zmq.gather.MameServer"></span><div class="section" id="mameserver-module">
+<h1><code class="xref py py-mod docutils literal"><span class="pre">MameServer</span></code> Module<a class="headerlink" href="#mameserver-module" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-cps2zmq.gather.MameServer" title="cps2zmq.gather.MameServer"><code class="xref py py-mod docutils literal"><span class="pre">MameServer</span></code></a> module contains a class of the same name.
+It is the first stop in a message processing chain. It receives messages from the ‘server’ running in a MAME instance
+and pushes them to a queue for workers to pull from.</p>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="the-mameserver-class">
+<h2>The MameServer Class<a class="headerlink" href="#the-mameserver-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cps2zmq.gather.MameServer.MameServer">
+<em class="property">class </em><code class="descclassname">cps2zmq.gather.MameServer.</code><code class="descname">MameServer</code><span class="sig-paren">(</span><em>front_addr</em>, <em>toworkers</em>, <em>log_to_file=False</em><span class="sig-paren">)</span><a class="headerlink" href="#cps2zmq.gather.MameServer.MameServer" title="Permalink to this definition">¶</a></dt>
+<dd><p>MameServer receives messages sent by an instance of MAME, and passes it to workers     for processing.</p>
+<dl class="attribute">
+<dt id="cps2zmq.gather.MameServer.MameServer.context">
+<code class="descname">context</code><a class="headerlink" href="#cps2zmq.gather.MameServer.MameServer.context" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">zmq.Context</span></code> – required by ZMQ to make the magic happen.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cps2zmq.gather.MameServer.MameServer.port">
+<code class="descname">port</code><a class="headerlink" href="#cps2zmq.gather.MameServer.MameServer.port" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em> – the port the serversub socket binds to.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cps2zmq.gather.MameServer.MameServer.serversub">
+<code class="descname">serversub</code><a class="headerlink" href="#cps2zmq.gather.MameServer.MameServer.serversub" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">zmq.Context.socket</span></code> – A zmq socket set to SUB.        MameClients connect and send messages here.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cps2zmq.gather.MameServer.MameServer.toworkers">
+<code class="descname">toworkers</code><a class="headerlink" href="#cps2zmq.gather.MameServer.MameServer.toworkers" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em> – the address to push work out on</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cps2zmq.gather.MameServer.MameServer.backend">
+<code class="descname">backend</code><a class="headerlink" href="#cps2zmq.gather.MameServer.MameServer.backend" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">zmq.Context.socket</span></code> – A zmq socket set to ROUTER.         Routes work to the worker that requested it.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cps2zmq.gather.MameServer.MameServer.backstream">
+<code class="descname">backstream</code><a class="headerlink" href="#cps2zmq.gather.MameServer.MameServer.backstream" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">zmq.eventloop.zmqstream.ZMQStream</span></code> – Used for registering callbacks         with the backend socket.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cps2zmq.gather.MameServer.MameServer.msgs_recv">
+<code class="descname">msgs_recv</code><a class="headerlink" href="#cps2zmq.gather.MameServer.MameServer.msgs_recv" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>int</em> – Total number of messages received.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cps2zmq.gather.MameServer.MameServer.workers">
+<code class="descname">workers</code><a class="headerlink" href="#cps2zmq.gather.MameServer.MameServer.workers" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list of threads</em> – Pool to keep track of workers.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="MameWorker.html" class="btn btn-neutral float-right" title="MameWorker Module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="gather.html" class="btn btn-neutral" title="The gather Package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, M B.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'3.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

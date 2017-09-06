@@ -1,0 +1,359 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Frame Module &mdash; CPS2-ZMQ 3.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CPS2-ZMQ 3.0 documentation" href="index.html"/>
+        <link rel="up" title="The process Package" href="process.html"/>
+        <link rel="next" title="Sprite Module" href="Sprite.html"/>
+        <link rel="prev" title="The process Package" href="process.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> CPS2-ZMQ
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="gather.html">The gather Package</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="process.html">The process Package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="process.html#modules">Modules</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#"><code class="docutils literal"><span class="pre">Frame</span></code> Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#example">Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#the-frame-class">The Frame Class</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#processing-frames-further">Processing Frames further</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="Sprite.html"><code class="docutils literal"><span class="pre">Sprite</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ColorTile.html"><code class="docutils literal"><span class="pre">ColorTile</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Tile.html"><code class="docutils literal"><span class="pre">Tile</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="encoding.html"><code class="docutils literal"><span class="pre">encoding</span></code> Module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Project Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cps2zmq.html">cps2zmq package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CPS2-ZMQ</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="process.html">The process Package</a> &raquo;</li>
+        
+      <li><code class="docutils literal"><span class="pre">Frame</span></code> Module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/Frame.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <span class="target" id="module-cps2zmq.process.Frame"></span><div class="section" id="frame-module">
+<h1><code class="xref py py-mod docutils literal"><span class="pre">Frame</span></code> Module<a class="headerlink" href="#frame-module" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-cps2zmq.process.Frame" title="cps2zmq.process.Frame"><code class="xref py py-mod docutils literal"><span class="pre">Frame</span></code></a> module provides a class with the same name which is
+used to represent a CPS2 Frame. This module has a few factory functions and provides
+functions for converting the <a class="reference internal" href="#module-cps2zmq.process.Frame" title="cps2zmq.process.Frame"><code class="xref py py-mod docutils literal"><span class="pre">Frame</span></code></a> to a variety of formats for further processing.</p>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<p>A Frame acquired by using <code class="xref py py-mod docutils literal"><span class="pre">gather</span></code> and then printed with <a class="reference internal" href="#cps2zmq.process.Frame.Frame.to_png" title="cps2zmq.process.Frame.Frame.to_png"><code class="xref py py-meth docutils literal"><span class="pre">to_png()</span></code></a>:</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="_images/Frame_ex.png"><img alt="_images/Frame_ex.png" src="_images/Frame_ex.png" style="width: 400px; height: 400px;" /></a>
+</div></blockquote>
+</div>
+<div class="section" id="the-frame-class">
+<h2>The Frame Class<a class="headerlink" href="#the-frame-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cps2zmq.process.Frame.Frame">
+<em class="property">class </em><code class="descclassname">cps2zmq.process.Frame.</code><code class="descname">Frame</code><span class="sig-paren">(</span><em>fnumber</em>, <em>sprites</em>, <em>palettes</em><span class="sig-paren">)</span><a class="headerlink" href="#cps2zmq.process.Frame.Frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Frame is a container of Sprites. It is related to the frames drawn by the CPS2 hardware.
+Ideally this would provide methods for manipulating sprites en masse.</p>
+<dl class="attribute">
+<dt id="cps2zmq.process.Frame.Frame.fnumber">
+<code class="descname">fnumber</code><a class="headerlink" href="#cps2zmq.process.Frame.Frame.fnumber" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>int</em> – the frame number.        Frames should have a unique fnumber (linearly increasing).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cps2zmq.process.Frame.Frame.sprites">
+<code class="descname">sprites</code><a class="headerlink" href="#cps2zmq.process.Frame.Frame.sprites" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">list</span></code> of <code class="xref py py-obj docutils literal"><span class="pre">Sprite.Sprite</span></code> – the Sprites of the Frame</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cps2zmq.process.Frame.Frame.palettes">
+<code class="descname">palettes</code><a class="headerlink" href="#cps2zmq.process.Frame.Frame.palettes" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>dict</em> – contains the 32 palettes used by Sprites/ColorTiles in the Frame</p>
+</dd></dl>
+
+</dd></dl>
+
+<p>The <a class="reference internal" href="#cps2zmq.process.Frame.Frame" title="cps2zmq.process.Frame.Frame"><code class="xref py py-class docutils literal"><span class="pre">Frame</span></code></a> class has the following methods</p>
+<dl class="method">
+<dt id="cps2zmq.process.Frame.Frame.add_sprites">
+<code class="descclassname">Frame.</code><code class="descname">add_sprites</code><span class="sig-paren">(</span><em>sprites</em><span class="sig-paren">)</span><a class="headerlink" href="#cps2zmq.process.Frame.Frame.add_sprites" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add sprites to the Frame’s existing sprites.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sprites</strong> (<code class="xref py py-obj docutils literal"><span class="pre">list</span></code> of <code class="xref py py-obj docutils literal"><span class="pre">Sprite.Sprite</span></code>) – a list of sprites</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cps2zmq.process.Frame.Frame.to_png">
+<code class="descclassname">Frame.</code><code class="descname">to_png</code><span class="sig-paren">(</span><em>fname</em>, <em>imsize=(400</em>, <em>400)</em><span class="sig-paren">)</span><a class="headerlink" href="#cps2zmq.process.Frame.Frame.to_png" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves the Frame as a PNG file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – the name to save the PNG file as.</li>
+<li><strong>imsize</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>, </em><em>optional</em>) – The size of the PNG file. Defaults to (400, 400)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cps2zmq.process.Frame.Frame.to_file">
+<code class="descclassname">Frame.</code><code class="descname">to_file</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#cps2zmq.process.Frame.Frame.to_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves the Frame object as a json encoded file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – The location to save to.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="cps2zmq.process.Frame.from_file">
+<em class="property">classmethod </em><code class="descclassname">Frame.</code><code class="descname">from_file</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#cps2zmq.process.Frame.from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a Frame from a json encoded file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – path to the json file.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a Frame object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="processing-frames-further">
+<h2>Processing Frames further<a class="headerlink" href="#processing-frames-further" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Sprite.html" class="btn btn-neutral float-right" title="Sprite Module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="process.html" class="btn btn-neutral" title="The process Package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, M B.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'3.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

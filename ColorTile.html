@@ -1,0 +1,392 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ColorTile Module &mdash; CPS2-ZMQ 3.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CPS2-ZMQ 3.0 documentation" href="index.html"/>
+        <link rel="up" title="The process Package" href="process.html"/>
+        <link rel="next" title="Tile Module" href="Tile.html"/>
+        <link rel="prev" title="Sprite Module" href="Sprite.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> CPS2-ZMQ
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="gather.html">The gather Package</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="process.html">The process Package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="process.html#modules">Modules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="Frame.html"><code class="docutils literal"><span class="pre">Frame</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Sprite.html"><code class="docutils literal"><span class="pre">Sprite</span></code> Module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#"><code class="docutils literal"><span class="pre">ColorTile</span></code> Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#examples">Examples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#the-colortile-class">The ColorTile Class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="Tile.html"><code class="docutils literal"><span class="pre">Tile</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="encoding.html"><code class="docutils literal"><span class="pre">encoding</span></code> Module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Project Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cps2zmq.html">cps2zmq package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CPS2-ZMQ</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="process.html">The process Package</a> &raquo;</li>
+        
+      <li><code class="docutils literal"><span class="pre">ColorTile</span></code> Module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/ColorTile.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <span class="target" id="module-cps2zmq.process.ColorTile"></span><div class="section" id="colortile-module">
+<h1><code class="xref py py-mod docutils literal"><span class="pre">ColorTile</span></code> Module<a class="headerlink" href="#colortile-module" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-cps2zmq.process.ColorTile" title="cps2zmq.process.ColorTile"><code class="xref py py-mod docutils literal"><span class="pre">ColorTile</span></code></a> module provides a class with the same name which is
+used to represent a CPS2 Tile with color added. This module has a few factory functions and provides
+functions for converting the <a class="reference internal" href="#module-cps2zmq.process.ColorTile" title="cps2zmq.process.ColorTile"><code class="xref py py-mod docutils literal"><span class="pre">ColorTile</span></code></a> to a variety of formats for further processing.</p>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="the-colortile-class">
+<h2>The ColorTile Class<a class="headerlink" href="#the-colortile-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cps2zmq.process.ColorTile.ColorTile">
+<em class="property">class </em><code class="descclassname">cps2zmq.process.ColorTile.</code><code class="descname">ColorTile</code><span class="sig-paren">(</span><em>address</em>, <em>data</em>, <em>palette</em>, <em>dimensions=16</em><span class="sig-paren">)</span><a class="headerlink" href="#cps2zmq.process.ColorTile.ColorTile" title="Permalink to this definition">¶</a></dt>
+<dd><p>ColorTile is Tile with a color palette.</p>
+<dl class="attribute">
+<dt id="cps2zmq.process.ColorTile.ColorTile.address">
+<code class="descname">address</code><a class="headerlink" href="#cps2zmq.process.ColorTile.ColorTile.address" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>int</em> – the address in memory the tile resides at.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cps2zmq.process.ColorTile.ColorTile.data">
+<code class="descname">data</code><a class="headerlink" href="#cps2zmq.process.ColorTile.ColorTile.data" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">bytes</span></code> – 32 bytes for a 8x8 tile or 128 bytes for a 16x16 tile.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cps2zmq.process.ColorTile.ColorTile.palette">
+<code class="descname">palette</code><a class="headerlink" href="#cps2zmq.process.ColorTile.ColorTile.palette" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>dict</em> – 16 key-value pairs related to what the RGB value of a pixel is.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cps2zmq.process.ColorTile.ColorTile.dimensions">
+<code class="descname">dimensions</code><a class="headerlink" href="#cps2zmq.process.ColorTile.ColorTile.dimensions" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>int</em> – 8 for an 8x8 tile, 16 for a 16x16 tile.</p>
+</dd></dl>
+
+</dd></dl>
+
+<p>The <a class="reference internal" href="#cps2zmq.process.ColorTile.ColorTile" title="cps2zmq.process.ColorTile.ColorTile"><code class="xref py py-class docutils literal"><span class="pre">ColorTile</span></code></a> class has the following methods</p>
+<dl class="method">
+<dt id="cps2zmq.process.ColorTile.ColorTile.to_array">
+<code class="descclassname">ColorTile.</code><code class="descname">to_array</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cps2zmq.process.ColorTile.ColorTile.to_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts the <a class="reference internal" href="#cps2zmq.process.ColorTile.ColorTile" title="cps2zmq.process.ColorTile.ColorTile"><code class="xref py py-obj docutils literal"><span class="pre">ColorTile</span></code></a> data into a correctly shaped numpy array.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a numpy.array.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cps2zmq.process.ColorTile.ColorTile.to_bmp">
+<code class="descclassname">ColorTile.</code><code class="descname">to_bmp</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#cps2zmq.process.ColorTile.ColorTile.to_bmp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a .bmp image.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – the location to save to</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cps2zmq.process.ColorTile.ColorTile.to_png">
+<code class="descclassname">ColorTile.</code><code class="descname">to_png</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#cps2zmq.process.ColorTile.ColorTile.to_png" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a .png image from a single 8x8 or 16x16 tile.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – the location to save to</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cps2zmq.process.ColorTile.ColorTile.to_tile">
+<code class="descclassname">ColorTile.</code><code class="descname">to_tile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cps2zmq.process.ColorTile.ColorTile.to_tile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes the RGB pixel values from the <a class="reference internal" href="#cps2zmq.process.ColorTile.ColorTile" title="cps2zmq.process.ColorTile.ColorTile"><code class="xref py py-obj docutils literal"><span class="pre">ColorTile</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a new unpacked <code class="xref py py-obj docutils literal"><span class="pre">Tile</span></code>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="cps2zmq.process.ColorTile.ColorTile.from_tile">
+<em class="property">classmethod </em><code class="descclassname">ColorTile.</code><code class="descname">from_tile</code><span class="sig-paren">(</span><em>tile</em>, <em>palette</em><span class="sig-paren">)</span><a class="headerlink" href="#cps2zmq.process.ColorTile.ColorTile.from_tile" title="Permalink to this definition">¶</a></dt>
+<dd><p>A factory function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>tile</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Tile</span></code>) – the <code class="xref py py-obj docutils literal"><span class="pre">Tile</span></code> to be colored.</li>
+<li><strong>palette</strong> (<a class="reference external" href="https://docs.python.org/2/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) – the color palette.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a <a class="reference internal" href="#cps2zmq.process.ColorTile.ColorTile" title="cps2zmq.process.ColorTile.ColorTile"><code class="xref py py-obj docutils literal"><span class="pre">ColorTile</span></code></a>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="cps2zmq.process.ColorTile.from_image">
+<em class="property">classmethod </em><code class="descclassname">ColorTile.</code><code class="descname">from_image</code><span class="sig-paren">(</span><em>image</em>, <em>address</em><span class="sig-paren">)</span><a class="headerlink" href="#cps2zmq.process.ColorTile.from_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>A factory function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>image</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – path to image</li>
+<li><strong>address</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – address in memory of <a class="reference internal" href="#cps2zmq.process.ColorTile.ColorTile" title="cps2zmq.process.ColorTile.ColorTile"><code class="xref py py-obj docutils literal"><span class="pre">ColorTile</span></code></a>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a <a class="reference internal" href="#cps2zmq.process.ColorTile.ColorTile" title="cps2zmq.process.ColorTile.ColorTile"><code class="xref py py-obj docutils literal"><span class="pre">ColorTile</span></code></a>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Tile.html" class="btn btn-neutral float-right" title="Tile Module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Sprite.html" class="btn btn-neutral" title="Sprite Module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, M B.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'3.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

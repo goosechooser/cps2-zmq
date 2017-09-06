@@ -1,0 +1,296 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>MameWorker Module &mdash; CPS2-ZMQ 3.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CPS2-ZMQ 3.0 documentation" href="index.html"/>
+        <link rel="up" title="The gather Package" href="gather.html"/>
+        <link rel="next" title="The process Package" href="process.html"/>
+        <link rel="prev" title="MameServer Module" href="MameServer.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> CPS2-ZMQ
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="gather.html">The gather Package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="MameServer.html"><code class="docutils literal"><span class="pre">MameServer</span></code> Module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal"><span class="pre">MameWorker</span></code> Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#examples">Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-mameworker-class">The MameWorker Class</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="process.html">The process Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Project Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cps2zmq.html">cps2zmq package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CPS2-ZMQ</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="gather.html">The gather Package</a> &raquo;</li>
+        
+      <li><code class="docutils literal"><span class="pre">MameWorker</span></code> Module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/MameWorker.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <span class="target" id="module-cps2zmq.gather.MameWorker"></span><div class="section" id="mameworker-module">
+<h1><code class="xref py py-mod docutils literal"><span class="pre">MameWorker</span></code> Module<a class="headerlink" href="#mameworker-module" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-cps2zmq.gather.MameWorker" title="cps2zmq.gather.MameWorker"><code class="xref py py-mod docutils literal"><span class="pre">MameWorker</span></code></a> module contains a class of the same name. Functionality related to processing of message contents are done here.</p>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="the-mameworker-class">
+<h2>The MameWorker Class<a class="headerlink" href="#the-mameworker-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cps2zmq.gather.MameWorker.MameWorker">
+<em class="property">class </em><code class="descclassname">cps2zmq.gather.MameWorker.</code><code class="descname">MameWorker</code><span class="sig-paren">(</span><em>idn</em>, <em>front_addr</em>, <em>service</em>, <em>pub_addr=None</em>, <em>log_to_file=False</em><span class="sig-paren">)</span><a class="headerlink" href="#cps2zmq.gather.MameWorker.MameWorker" title="Permalink to this definition">¶</a></dt>
+<dd><p>MameWorker turns data into Frames.</p>
+<dl class="attribute">
+<dt id="cps2zmq.gather.MameWorker.MameWorker.w_id">
+<code class="descname">w_id</code><a class="headerlink" href="#cps2zmq.gather.MameWorker.MameWorker.w_id" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em> – The worker’s ‘id’. This an address that is appended to the front         of messages it sends to the server.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cps2zmq.gather.MameWorker.MameWorker.context">
+<code class="descname">context</code><a class="headerlink" href="#cps2zmq.gather.MameWorker.MameWorker.context" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">zmq.Context</span></code> – required by ZMQ to make the magic happen.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">The other side of the socket is usually bound by a MameServer.</code></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="cps2zmq.gather.MameWorker.MameWorker.socket_addr">
+<code class="descname">socket_addr</code><a class="headerlink" href="#cps2zmq.gather.MameWorker.MameWorker.socket_addr" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em> – The address to connect the frontend socket to. This is usually set</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cps2zmq.gather.MameWorker.MameWorker.frontend">
+<code class="descname">frontend</code><a class="headerlink" href="#cps2zmq.gather.MameWorker.MameWorker.frontend" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">zmq.Context.socket</span></code> – Socket that connects to the MameServer address.         Sends requests for work.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cps2zmq.gather.MameWorker.MameWorker.working">
+<code class="descname">working</code><a class="headerlink" href="#cps2zmq.gather.MameWorker.MameWorker.working" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>bool</em> – Whether the worker is in its main loop or closing.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="process.html" class="btn btn-neutral float-right" title="The process Package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="MameServer.html" class="btn btn-neutral" title="MameServer Module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, M B.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'3.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
