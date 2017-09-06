@@ -1,18 +1,39 @@
+import time
 import pytest
-from cps2_zmq.gather.MameServer import MameServer
-from cps2_zmq.gather.MameWorker import MameWorker
+import pymongo
+from cps2zmq.gather import MameServer, MameWorker
 
-@pytest.mark.skip()
-@pytest.mark.timeout(timeout=10, method='thread')
+# db_name = 'integration_test'
+
+# @pytest.fixture(scope="module")
+# def db():
+#     db_client = pymongo.MongoClient()
+#     db = db_client[db_name]
+#     yield db
+#     db_client.drop_database(db_name)
+#     db_client.close()
+
+# @pytest.mark.skip
+@pytest.mark.timeout(timeout=20, method='thread')
 def test_pipeline(client):
-    num_workers = 2
+    server = MameServer("tcp://127.0.0.1:5666", "tcp://127.0.0.1:5557")
+    workers = [MameWorker(str(num), "tcp://127.0.0.1:5557", b'mame') for num in range(2)]
 
-    server = MameServer(5556, "inproc://toworkers")
-    workers = [MameWorker("inproc://toworkers", "inproc://fromworkers", "inproc://control")
-               for i in range(num_workers)]
-    client.msg_limit = None
-    client.run()
+    client.start()
     server.start()
-    print(server.msgs_recv)
-    assert 0
-    
+
+    # love too test nonblocking code
+    time.sleep(5)
+    server.shutdown()
+
+    assert server.frontstream is None
+    assert server.backstream is None
+
+    msgs_sum = 0
+    for w in workers:
+        w.close()
+        msgs_sum += w.msgs_recv
+        assert w.heartbeater is None
+        assert w.frontstream is None
+
+    assert server.msgs_recv == msgs_sum

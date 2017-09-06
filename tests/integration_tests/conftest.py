@@ -1,45 +1,42 @@
 # pylint: disable=E1101
 
+import sys
+import time
 from threading import Thread
 import pytest
 import zmq
-import pymongo
-import msgpack
 
+# Need to refactor this to pull from not mongodb
 class MockMameClient(Thread):
-    def __init__(self, port, collection, context=None):
+    def __init__(self, port, msgs, context=None):
         super(MockMameClient, self).__init__()
         self._context = context or zmq.Context.instance()
-        self._publisher = self._context.socket(zmq.PUB)
-        self._publisher.bind(':'.join(["tcp://127.0.0.1", str(port)]))
-        self._msg_limit = 10
-        self._client = pymongo.MongoClient()
-        self._db = self._client[collection]
+        self.front = self._context.socket(zmq.DEALER)
+        self.front.connect(':'.join(["tcp://127.0.0.1", str(port)]))
+        self.front.setsockopt(zmq.IDENTITY, b'\x69')
+        self.msgs = msgs
         self.daemon = True
 
-    @property
-    def msg_limit(self):
-        return self._msg_limit
-
-    @msg_limit.setter
-    def msg_limit(self, value):
-        self._msg_limit = value
-
     def run(self):
-        frames = self._db.frames.find(projection={'_id' : 0}, limit=self.msg_limit)
-        for frame in frames:
-            msg = msgpack.packb(frame, encoding='utf-8')
-            self._publisher.send(msg)
+        print('Client sending frames')
+        sys.stdout.flush()
 
-        msg = msgpack.packb({'frame_number' : 'closing'}, encoding='utf-8')
-        self._publisher.send(msg)
+        for frame in self.msgs:
+            self.request(b'mame', frame)
+
+        time.sleep(5)
+        print('Client disconnecting')
+        sys.stdout.flush()
+        self.request(b'disconnect', b'MENSA')
+
+    def request(self, service, message):
+        self.front.send_multipart([b'', b'MDPC01', service, message])
 
     def close(self):
-        self._publisher.close()
-        self._client.close()
+        self.front.close()
 
 @pytest.fixture(scope="module")
-def client():
-    client = MockMameClient(5666, 'cps2')
+def client(rawframes):
+    client = MockMameClient(5666, rawframes)
     yield client
     client.close()

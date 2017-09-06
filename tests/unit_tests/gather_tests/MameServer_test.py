@@ -1,41 +1,26 @@
 # pylint: disable=E1101
 
-import zmq
 import pytest
-from cps2_zmq.gather.MameServer import MameServer, close_workers
+from cps2zmq.gather import MameServer
 
-@pytest.fixture(scope="module")
-def test_socket():
-    context = zmq.Context.instance()
-    test_socket = context.socket(zmq.DEALER)
-    test_socket.bind("inproc://testsocket")
-    yield test_socket
-    test_socket.close()
+port = 6668
+front_addr = ':'.join(["tcp://127.0.0.1", str(port)])
+back_addr = ':'.join(["tcp://127.0.0.1", str(port + 1)])
 
-@pytest.mark.timeout(timeout=10, method='thread')
-def test_close_workers(worker, test_socket, monkeypatch):
-    worker.w_id = bytes('1', encoding='UTF-8')
-    workers = [worker]
+worker_idn = bytes(str(1), encoding='UTF-8')
+empty = b''
+service = b'mame'
 
-    for w in workers:
-        w.frontend.connect("inproc://testsocket")
+@pytest.fixture(scope="function")
+def server():
+    server = MameServer(front_addr, back_addr)
+    yield server
+    server.shutdown()
 
-    close_workers(workers, test_socket)
-    for w in workers:
-        assert w.frontend.recv_multipart()
+def test_setup(server):
+    server.setup()
+    assert server.msgreport is not None
 
-@pytest.mark.skip
-@pytest.mark.timeout(timeout=10, method='thread')
-def test_start(client, worker):
-    client.msg_limit = 100
-
-    server = MameServer(5666, "inproc://tomockworkers")
-    client.start()
-    server.start()
-
-    worker.pull_messages()
-
-    assert server.msgs_recv == worker.msgs_recv
-
-
-
+def test_shutdown(server):
+    server.shutdown()
+    assert server.msgreport is None
